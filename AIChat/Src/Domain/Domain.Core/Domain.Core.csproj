@@ -7,8 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\" />
-    <Folder Include="UnitOfWorkContracts\" />
+    <Folder Include="Entities\ChatMessageTemplateAggregate\Exceptions\" />
+    <Folder Include="Entities\ChatSessionTemplateAggregate\Exceptions\" />
+    <Folder Include="Entities\FeedbackTemplateAggregate\Exceptions\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\Shared.Exception.Abstraction\Shared.Exception.Abstraction.csproj" />
+    <ProjectReference Include="..\Domain.Base\Domain.Base.csproj" />
   </ItemGroup>
 
 </Project>

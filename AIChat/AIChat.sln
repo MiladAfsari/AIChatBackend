@@ -12,15 +12,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{A3A8061E-9B4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{97A48AA5-6E6D-4412-82E5-1C0459236001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Command.UnitTest", "Tests\Application.Command.UnitTest\Application.Command.UnitTest.csproj", "{B948C01B-8FF5-4842-9112-9F115BB880E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Command.UnitTest", "Tests\Application.Command.UnitTest\Application.Command.UnitTest.csproj", "{B948C01B-8FF5-4842-9112-9F115BB880E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Query.UnitTest", "Tests\Application.Query.UnitTest\Application.Query.UnitTest.csproj", "{1BCE41D2-FBF2-4404-AFEB-E9AB56719305}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Query.UnitTest", "Tests\Application.Query.UnitTest\Application.Query.UnitTest.csproj", "{1BCE41D2-FBF2-4404-AFEB-E9AB56719305}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Service.UnitTest", "Tests\Application.Service.UnitTest\Application.Service.UnitTest.csproj", "{E74BFBDA-5C70-4DE2-B64A-4A650653641D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Service.UnitTest", "Tests\Application.Service.UnitTest\Application.Service.UnitTest.csproj", "{E74BFBDA-5C70-4DE2-B64A-4A650653641D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Base.UnitTest", "Tests\Base.UnitTest\Base.UnitTest.csproj", "{24CF9EB9-C3B8-45BD-BF7C-43EF65BC6C89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Base.UnitTest", "Tests\Base.UnitTest\Base.UnitTest.csproj", "{24CF9EB9-C3B8-45BD-BF7C-43EF65BC6C89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.Core.UnitTest", "Tests\Domain.Core.UnitTest\Domain.Core.UnitTest.csproj", "{FF6BCFD4-C7A1-4001-A21E-032705C8F3A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain.Core.UnitTest", "Tests\Domain.Core.UnitTest\Domain.Core.UnitTest.csproj", "{FF6BCFD4-C7A1-4001-A21E-032705C8F3A9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{3AD3546D-536F-44A1-B020-214272612FBB}"
 EndProject
@@ -32,31 +32,33 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{86C3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{C37BAC99-49A2-4E0C-A994-1858247D3B31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Command", "Src\Application\Application.Command\Application.Command.csproj", "{7863E7B0-BA28-4AA9-9213-5F397D5DDA2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Command", "Src\Application\Application.Command\Application.Command.csproj", "{7863E7B0-BA28-4AA9-9213-5F397D5DDA2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Query", "Src\Application\Application.Query\Application.Query.csproj", "{89F7B20B-C161-46AD-9A1D-6A4FBD9087F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Query", "Src\Application\Application.Query\Application.Query.csproj", "{89F7B20B-C161-46AD-9A1D-6A4FBD9087F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application.Service", "Src\Application\Application.Service\Application.Service.csproj", "{D21E5C45-CD6F-49E7-92FC-64899275CA97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application.Service", "Src\Application\Application.Service\Application.Service.csproj", "{D21E5C45-CD6F-49E7-92FC-64899275CA97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.Base", "Src\Domain\Domain.Base\Domain.Base.csproj", "{9227CF01-A17A-407D-94A7-A9DCBC548BDB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain.Base", "Src\Domain\Domain.Base\Domain.Base.csproj", "{9227CF01-A17A-407D-94A7-A9DCBC548BDB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain.Core", "Src\Domain\Domain.Core\Domain.Core.csproj", "{08F94BA6-F566-4BE5-8940-F134894E489E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain.Core", "Src\Domain\Domain.Core\Domain.Core.csproj", "{08F94BA6-F566-4BE5-8940-F134894E489E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Data.Repository.EfCore", "Src\Infrastructure\Infrastructure.Data.Repository.EfCore\Infrastructure.Data.Repository.EfCore.csproj", "{CD00DA0E-F552-4C66-A8B7-FAEB719D6A00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure.Data.Repository.EfCore", "Src\Infrastructure\Infrastructure.Data.Repository.EfCore\Infrastructure.Data.Repository.EfCore.csproj", "{CD00DA0E-F552-4C66-A8B7-FAEB719D6A00}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Exception.Abstraction", "Src\Shared\Shared.Exception.Abstraction\Shared.Exception.Abstraction.csproj", "{98D35793-BF9F-4976-8361-E53796097A46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Exception.Abstraction", "Src\Shared\Shared.Exception.Abstraction\Shared.Exception.Abstraction.csproj", "{98D35793-BF9F-4976-8361-E53796097A46}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.IdentityServerProvider", "Src\Shared\Shared.IdentityServerProvider\Shared.IdentityServerProvider.csproj", "{9AE89F3D-11F4-4354-AD78-EE75E0523DFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.IdentityServerProvider", "Src\Shared\Shared.IdentityServerProvider\Shared.IdentityServerProvider.csproj", "{9AE89F3D-11F4-4354-AD78-EE75E0523DFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Logging.Abstraction", "Src\Shared\Shared.Logging.Abstraction\Shared.Logging.Abstraction.csproj", "{DF53BA2B-7348-4DC8-BE2B-02B407A0ECBF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Logging.Abstraction", "Src\Shared\Shared.Logging.Abstraction\Shared.Logging.Abstraction.csproj", "{DF53BA2B-7348-4DC8-BE2B-02B407A0ECBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Logging.Serilog", "Src\Shared\Shared.Logging.Serilog\Shared.Logging.Serilog.csproj", "{916A7087-FC0A-4F3B-B9BD-814A6246282A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Logging.Serilog", "Src\Shared\Shared.Logging.Serilog\Shared.Logging.Serilog.csproj", "{916A7087-FC0A-4F3B-B9BD-814A6246282A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Middlewares", "Src\Shared\Shared.Middlewares\Shared.Middlewares.csproj", "{78494E12-F7F1-4757-B64B-173A95C30CF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Middlewares", "Src\Shared\Shared.Middlewares\Shared.Middlewares.csproj", "{78494E12-F7F1-4757-B64B-173A95C30CF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.Swagger", "Src\Shared\Shared.Swagger\Shared.Swagger.csproj", "{DE1A5703-9951-4C94-9086-2E9D6B71D034}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared.Swagger", "Src\Shared\Shared.Swagger\Shared.Swagger.csproj", "{DE1A5703-9951-4C94-9086-2E9D6B71D034}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Rest", "Src\Service\Service.Rest\Service.Rest.csproj", "{573C877D-2373-4649-8150-B8E549D50188}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service.Rest", "Src\Service\Service.Rest\Service.Rest.csproj", "{573C877D-2373-4649-8150-B8E549D50188}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.MediatR", "Src\Shared\Shared.MediatR\Shared.MediatR.csproj", "{9A6D92A4-9905-4948-B091-75069DE68E20}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -136,6 +138,10 @@ Global
 		{573C877D-2373-4649-8150-B8E549D50188}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{573C877D-2373-4649-8150-B8E549D50188}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{573C877D-2373-4649-8150-B8E549D50188}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A6D92A4-9905-4948-B091-75069DE68E20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A6D92A4-9905-4948-B091-75069DE68E20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A6D92A4-9905-4948-B091-75069DE68E20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A6D92A4-9905-4948-B091-75069DE68E20}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -164,6 +170,7 @@ Global
 		{78494E12-F7F1-4757-B64B-173A95C30CF0} = {C37BAC99-49A2-4E0C-A994-1858247D3B31}
 		{DE1A5703-9951-4C94-9086-2E9D6B71D034} = {C37BAC99-49A2-4E0C-A994-1858247D3B31}
 		{573C877D-2373-4649-8150-B8E549D50188} = {86C35122-5D18-43BA-831D-A3D31F6C3461}
+		{9A6D92A4-9905-4948-B091-75069DE68E20} = {C37BAC99-49A2-4E0C-A994-1858247D3B31}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8E81B8F6-E536-4DD3-AA36-3138602D7FA5}
