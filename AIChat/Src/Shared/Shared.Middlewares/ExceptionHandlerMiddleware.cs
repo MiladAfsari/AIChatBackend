@@ -1,6 +1,7 @@
 ﻿using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Shared.Exception.Abstraction.Domain;
 using Shared.Exception.Abstraction.Infrastructure;
 using Shared.Middlewares.Models;
@@ -10,17 +11,13 @@ using System.Text.Json;
 public class ExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly IExceptionLogRepository _exceptionLogRepository;
-    private readonly IApplicationDbContextUnitOfWork _applicationDbContextUnitOfWork;
 
-    public ExceptionHandlerMiddleware(RequestDelegate next, IExceptionLogRepository exceptionLogRepository, IApplicationDbContextUnitOfWork applicationDbContextUnitOfWork)
+    public ExceptionHandlerMiddleware(RequestDelegate next)
     {
         _next = next;
-        _exceptionLogRepository = exceptionLogRepository;
-        _applicationDbContextUnitOfWork = applicationDbContextUnitOfWork;
     }
 
-    public async Task InvokeAsync(HttpContext httpContext)
+    public async Task InvokeAsync(HttpContext httpContext, IServiceProvider serviceProvider)
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -31,11 +28,13 @@ public class ExceptionHandlerMiddleware
         catch (Exception ex)
         {
             stopwatch.Stop();
-            await HandleExceptionAsync(httpContext, ex, stopwatch.ElapsedMilliseconds);
+            var exceptionLogRepository = serviceProvider.GetRequiredService<IExceptionLogRepository>();
+            var applicationDbContextUnitOfWork = serviceProvider.GetRequiredService<IApplicationDbContextUnitOfWork>();
+            await HandleExceptionAsync(httpContext, ex, stopwatch.ElapsedMilliseconds, exceptionLogRepository, applicationDbContextUnitOfWork);
         }
     }
 
-    private async Task HandleExceptionAsync(HttpContext context, Exception exception, long elapsedMilliseconds)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception, long elapsedMilliseconds, IExceptionLogRepository exceptionLogRepository, IApplicationDbContextUnitOfWork applicationDbContextUnitOfWork)
     {
         context.Response.ContentType = "application/json";
 
@@ -44,7 +43,6 @@ public class ExceptionHandlerMiddleware
             NotFoundException => StatusCodes.Status404NotFound,
             UnauthorizedException => StatusCodes.Status401Unauthorized,
             ForbiddenException => StatusCodes.Status403Forbidden,
-            //BadHttpRequestException => StatusCodes.Status400BadRequest,
             ValidationException or ModelStateValidationException => StatusCodes.Status422UnprocessableEntity,
             InfrastructureDbOperationException => StatusCodes.Status500InternalServerError,
             TaskCanceledException => StatusCodes.Status504GatewayTimeout,
@@ -60,13 +58,13 @@ public class ExceptionHandlerMiddleware
             ElapsedMilliseconds = elapsedMilliseconds
         };
 
-        await LogExceptionAsync(context, exception, statusCode, elapsedMilliseconds);
+        await LogExceptionAsync(context, exception, statusCode, elapsedMilliseconds, exceptionLogRepository, applicationDbContextUnitOfWork);
 
         var result = JsonSerializer.Serialize(errorResponse);
         await context.Response.WriteAsync(result);
     }
 
-    private async Task LogExceptionAsync(HttpContext context, Exception exception, int statusCode, long elapsedMilliseconds)
+    private async Task LogExceptionAsync(HttpContext context, Exception exception, int statusCode, long elapsedMilliseconds, IExceptionLogRepository exceptionLogRepository, IApplicationDbContextUnitOfWork applicationDbContextUnitOfWork)
     {
         var exceptionLog = new ExceptionLog
         {
@@ -81,7 +79,7 @@ public class ExceptionHandlerMiddleware
             Timestamp = DateTime.UtcNow
         };
 
-        await _exceptionLogRepository.LogExceptionAsync(exceptionLog);
-        await _applicationDbContextUnitOfWork.SaveChangesAsync();
+        await exceptionLogRepository.LogExceptionAsync(exceptionLog);
+        await applicationDbContextUnitOfWork.SaveChangesAsync();
     }
 }

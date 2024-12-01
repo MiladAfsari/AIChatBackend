@@ -9,7 +9,6 @@ using Service.Rest.V1.RequestModels;
 namespace Service.Rest.V1.Controllers
 {
     [ApiController]
-    [ApiVersion("1.0")]
     [Route("api/users")]
     [Authorize]
     public class UserController : ControllerBase
@@ -20,7 +19,7 @@ namespace Service.Rest.V1.Controllers
         {
             _mediator = mediator;
         }
-
+        
         [HttpPost]
         public async Task<ActionResult<bool>> CreateUser([FromBody] CreateUserModel request)
         {

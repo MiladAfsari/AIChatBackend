@@ -8,13 +8,16 @@ using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Infrastructure.Data.Repository.EfCore.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using Shared.MediatR;
 using System.Reflection;
+using System.Text;
 
 namespace Service.Rest
 {
-    internal static class ServiceRegistration
+    public static class ServiceRegistration
     {
         public static void RegisterRepositories(this IServiceCollection services)
         {
@@ -36,17 +39,37 @@ namespace Service.Rest
                 {
                     Assembly.GetAssembly(typeof(BaseCommandHandler)),
                     Assembly.GetAssembly(typeof(BaseQueryHandler))
-                }); ;
+                });
                 options.EnableAutoLogging = false;
                 options.EnableAutoValidation = true;
             });
         }
-        public static void RegisterAuthentication(this IServiceCollection services)
+        public static void RegisterAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
-        }
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
+            var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]);
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidAudience = configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(key)
+                };
+            });
+        }
     }
 }
