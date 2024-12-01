@@ -1,7 +1,8 @@
-
+using Domain.Core.Entities.UserTemplateAggregate;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
-using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Service.Rest
 {
@@ -28,6 +29,7 @@ namespace Service.Rest
             builder.Services.RegisterMediatorService();
             builder.Services.RegisterRepositories();
             builder.Services.RegisterUnitOfWorks();
+            builder.Services.RegisterAuthentication();
 
             var app = builder.Build();
 

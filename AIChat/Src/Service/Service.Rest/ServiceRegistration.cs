@@ -8,6 +8,7 @@ using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Infrastructure.Data.Repository.EfCore.Repositories;
+using Microsoft.AspNetCore.Identity;
 using Shared.MediatR;
 using System.Reflection;
 
@@ -15,7 +16,7 @@ namespace Service.Rest
 {
     internal static class ServiceRegistration
     {
-        internal static void RegisterRepositories(this IServiceCollection services)
+        public static void RegisterRepositories(this IServiceCollection services)
         {
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
@@ -23,11 +24,11 @@ namespace Service.Rest
             services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
             services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
         }
-        internal static void RegisterUnitOfWorks(this IServiceCollection services)
+        public static void RegisterUnitOfWorks(this IServiceCollection services)
         {
             services.AddScoped<IApplicationDbContextUnitOfWork, ApplicationDbContextUnitOfWork>();
         }
-        internal static void RegisterMediatorService(this IServiceCollection services)
+        public static void RegisterMediatorService(this IServiceCollection services)
         {
             services.AddMediatorService(options =>
             {
@@ -40,9 +41,11 @@ namespace Service.Rest
                 options.EnableAutoValidation = true;
             });
         }
-        internal static void RegisterAuthentication(this IServiceCollection services, IConfiguration configuration)
+        public static void RegisterAuthentication(this IServiceCollection services)
         {
-
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
         }
 
     }

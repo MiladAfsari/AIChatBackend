@@ -17,6 +17,7 @@
     <ProjectReference Include="..\..\Application\Application.Command\Application.Command.csproj" />
     <ProjectReference Include="..\..\Application\Application.Query\Application.Query.csproj" />
     <ProjectReference Include="..\..\Shared\Shared.MediatR\Shared.MediatR.csproj" />
+    <ProjectReference Include="..\..\Shared\Shared.Middlewares\Shared.Middlewares.csproj" />
   </ItemGroup>
 
 </Project>
