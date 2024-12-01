@@ -4,6 +4,7 @@ using Domain.Core.Entities.ChatMessageTemplateAggregate;
 using Domain.Core.Entities.ChatSessionTemplateAggregate;
 using Domain.Core.Entities.FeedbackTemplateAggregate;
 using Domain.Core.Entities.UserTemplateAggregate;
+using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Infrastructure.Data.Repository.EfCore.Repositories;
@@ -20,6 +21,7 @@ namespace Service.Rest
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
             services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
+            services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
         }
         internal static void RegisterUnitOfWorks(this IServiceCollection services)
         {
@@ -34,7 +36,7 @@ namespace Service.Rest
                     Assembly.GetAssembly(typeof(BaseCommandHandler)),
                     Assembly.GetAssembly(typeof(BaseQueryHandler))
                 }); ;
-                options.EnableAutoLogging = true;
+                options.EnableAutoLogging = false;
                 options.EnableAutoValidation = true;
             });
         }

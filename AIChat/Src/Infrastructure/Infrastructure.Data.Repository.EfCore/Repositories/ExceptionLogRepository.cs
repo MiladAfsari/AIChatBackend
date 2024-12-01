@@ -3,7 +3,7 @@ using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 
 namespace Infrastructure.Data.Repository.EfCore.Repositories
 {
-    public class ExceptionLogRepository
+    public class ExceptionLogRepository : IExceptionLogRepository
     {
         private readonly ApplicationDbContext _dbContext;
 
