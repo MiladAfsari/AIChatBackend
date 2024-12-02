@@ -51,7 +51,7 @@ public class ExceptionHandlerMiddleware
 
         context.Response.StatusCode = statusCode;
 
-        var errorResponse = new
+        var errorResponse = new ErrorResponse
         {
             Type = exception.GetType().Name.Replace("Exception", string.Empty),
             Message = exception.Message,

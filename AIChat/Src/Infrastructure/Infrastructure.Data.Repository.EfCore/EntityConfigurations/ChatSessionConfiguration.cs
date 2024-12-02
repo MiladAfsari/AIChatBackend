@@ -21,7 +21,8 @@ namespace Infrastructure.Data.Repository.EfCore.EntityConfigurations
             builder.Property(cs => cs.Description)
                 .HasColumnType("text");
 
-            builder.HasIndex(cs => cs.SessionName); // Index for faster searching by SessionName
+            builder.HasIndex(cs => cs.SessionName)
+                .HasDatabaseName("IX_ChatSession_SessionName"); // Explicitly name the index
 
             builder.HasOne(cs => cs.ApplicationUser)
                 .WithMany(u => u.ChatSessions)

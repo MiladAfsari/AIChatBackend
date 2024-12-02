@@ -5,29 +5,30 @@ using MediatR;
 
 namespace Application.Query.UserQueries
 {
-    public class GetUserByIdQuery : IRequest<UserViewModel>
+    public class GetUserByUserNameQuery : IRequest<UserViewModel>
     {
-        public string Id { get; }
+        public string UserName { get; }
 
-        public GetUserByIdQuery(string id)
+        public GetUserByUserNameQuery(string userName)
         {
-            Id = id;
+            UserName = userName;
         }
     }
-    public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserViewModel>
+
+    public class GetUserByUserNameQueryHandler : IRequestHandler<GetUserByUserNameQuery, UserViewModel>
     {
         private readonly IUserRepository _userRepository;
 
-        public GetUserByIdQueryHandler(IUserRepository userRepository)
+        public GetUserByUserNameQueryHandler(IUserRepository userRepository)
         {
             _userRepository = userRepository;
         }
 
-        public async Task<UserViewModel> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+        public async Task<UserViewModel> Handle(GetUserByUserNameQuery request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetUserByIdAsync(request.Id);
+            var user = await _userRepository.GetUserByUserNameAsync(request.UserName);
 
-            if (user == null) throw new UserNotFoundException(request.Id);
+            if (user == null) throw new UserNotFoundException(request.UserName);
 
             return new UserViewModel
             {
@@ -36,7 +37,6 @@ namespace Application.Query.UserQueries
                 FullName = user.FullName,
                 Email = user.Email,
             };
-
         }
     }
 }

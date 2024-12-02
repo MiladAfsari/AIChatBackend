@@ -12,7 +12,7 @@ namespace Infrastructure.Data.Repository.EfCore.EntityConfigurations
             .HasMaxLength(150)
             .IsRequired();
 
-            builder.HasIndex(u => u.FullName); // Index for faster searching by FullName
+            builder.HasIndex(u => u.FullName); 
 
             builder.ToTable("AspNetUsers");
         }

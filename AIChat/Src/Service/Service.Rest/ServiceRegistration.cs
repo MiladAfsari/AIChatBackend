@@ -1,5 +1,6 @@
 ﻿using Application.Command.Base;
 using Application.Query.Base;
+using Application.Service.Common;
 using Domain.Core.Entities.ChatMessageTemplateAggregate;
 using Domain.Core.Entities.ChatSessionTemplateAggregate;
 using Domain.Core.Entities.FeedbackTemplateAggregate;
@@ -8,6 +9,7 @@ using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Infrastructure.Data.Repository.EfCore.Repositories;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -47,8 +49,8 @@ namespace Service.Rest
         public static void RegisterAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+               .AddEntityFrameworkStores<ApplicationDbContext>()
+               .AddDefaultTokenProviders();
 
             var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]);
 
@@ -70,6 +72,10 @@ namespace Service.Rest
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
             });
+        }
+        public static void RegisterTokenService(this IServiceCollection services)
+        {
+            services.AddScoped<ITokenService, TokenService>();
         }
     }
 }

@@ -21,14 +21,12 @@ namespace Infrastructure.Data.Repository.EfCore.EntityConfigurations
             builder.Property(cm => cm.Answer)
                 .HasColumnType("text");
 
-            builder.HasIndex(cm => cm.Question); // Index for faster searches by Question
-
             builder.HasOne(cm => cm.ChatSession)
                 .WithMany(cs => cs.ChatMessages)
                 .HasForeignKey(cm => cm.ChatSessionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            builder.ToTable("ChatMessage");
+            builder.ToTable("ChatMessages"); // Use plural form for table name for consistency
         }
     }
 

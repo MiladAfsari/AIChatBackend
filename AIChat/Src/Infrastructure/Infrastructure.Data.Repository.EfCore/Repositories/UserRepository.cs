@@ -13,6 +13,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
             _userManager = userManager;
         }
 
+      
         // Bulk import users with roles from Excel data
         public async Task<bool> AddUsersFromExcelAsync(IEnumerable<(string UserName, string Password, string Role)> usersData)
         {
@@ -32,6 +33,13 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
                 }
             }
             return true;
+        }
+
+        // Get a user by username
+        public async Task<ApplicationUser> GetUserByUserNameAsync(string userName)
+        {
+            return await _userManager.Users
+                .FirstOrDefaultAsync(u => u.UserName == userName);
         }
 
         // Add a single user with a role

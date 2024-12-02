@@ -1,8 +1,5 @@
-using Domain.Core.Entities.UserTemplateAggregate;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Service.Rest
 {
@@ -29,7 +26,11 @@ namespace Service.Rest
             builder.Services.RegisterMediatorService();
             builder.Services.RegisterRepositories();
             builder.Services.RegisterUnitOfWorks();
+            builder.Services.RegisterTokenService();
             builder.Services.RegisterAuthentication(builder.Configuration);
+
+            // Register ILogger
+            builder.Services.AddLogging();
 
             var app = builder.Build();
 
