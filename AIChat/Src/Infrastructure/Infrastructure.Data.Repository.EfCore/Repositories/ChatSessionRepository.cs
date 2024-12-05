@@ -13,16 +13,31 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
             _context = context;
         }
 
-        public async Task<ChatSession> GetByIdAsync(Guid id)
+        public async Task<Guid> AddAsync(ChatSession chatSession)
         {
-            return await _context.ChatSessions
-                .Include(cs => cs.ChatMessages) // Eager load related messages
-                .FirstOrDefaultAsync(cs => cs.Id == id);
+            _context.ChatSessions.Add(chatSession);
+            await _context.SaveChangesAsync();
+            return chatSession.Id;
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            var chatSession = await _context.ChatSessions.FindAsync(id);
+            if (chatSession != null)
+            {
+                _context.ChatSessions.Remove(chatSession);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<IEnumerable<ChatSession>> GetAllAsync()
         {
             return await _context.ChatSessions.ToListAsync();
+        }
+
+        public async Task<ChatSession> GetByIdAsync(Guid id)
+        {
+            return await _context.ChatSessions.FindAsync(id);
         }
 
         public async Task<IEnumerable<ChatSession>> GetByUserIdAsync(string userId)
@@ -32,38 +47,17 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
                 .ToListAsync();
         }
 
-        // Get a ChatSession along with its related messages based on sessionId
         public async Task<ChatSession> GetSessionWithMessagesByIdAsync(Guid sessionId)
         {
             return await _context.ChatSessions
-                .Include(cs => cs.ChatMessages) // Eager load related messages
+                .Include(cs => cs.ChatMessages)
                 .FirstOrDefaultAsync(cs => cs.Id == sessionId);
-        }
-
-        public async Task AddAsync(ChatSession chatSession)
-        {
-            await _context.ChatSessions.AddAsync(chatSession);
         }
 
         public async Task UpdateAsync(ChatSession chatSession)
         {
-            var existingSession = await _context.ChatSessions.FindAsync(chatSession.Id);
-            if (existingSession != null)
-            {
-                existingSession.SessionName = chatSession.SessionName;
-                existingSession.Description = chatSession.Description;
-                existingSession.ApplicationUserId = chatSession.ApplicationUserId;
-                existingSession.ChatMessages = chatSession.ChatMessages; // Update related messages
-            }
-        }
-
-        public async Task DeleteAsync(Guid id)
-        {
-            var session = await _context.ChatSessions.FindAsync(id);
-            if (session != null)
-            {
-                _context.ChatSessions.Remove(session);
-            }
+            _context.ChatSessions.Update(chatSession);
+            await _context.SaveChangesAsync();
         }
     }
 }

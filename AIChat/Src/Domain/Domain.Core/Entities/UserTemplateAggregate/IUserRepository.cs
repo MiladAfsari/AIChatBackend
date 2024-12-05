@@ -7,8 +7,9 @@
         Task<ApplicationUser> AuthenticateAsync(string userName, string password);
         Task<IEnumerable<ApplicationUser>> GetAllUsersAsync();
         Task<ApplicationUser> GetUserByIdAsync(string id);
-        Task<ApplicationUser> GetUserByUserNameAsync(string userName); 
+        Task<ApplicationUser> GetUserByUserNameAsync(string userName);
         Task<bool> UpdateUserAsync(ApplicationUser user);
         Task<bool> DeleteUserAsync(string id);
+        Task<bool> ChangePasswordAsync(string userName, string newPassword); 
     }
 }

@@ -9,7 +9,7 @@
         // Get a ChatSession along with its related messages based on sessionId
         Task<ChatSession> GetSessionWithMessagesByIdAsync(Guid sessionId);
 
-        Task AddAsync(ChatSession chatSession);
+        Task<Guid> AddAsync(ChatSession chatSession);
         Task UpdateAsync(ChatSession chatSession);
         Task DeleteAsync(Guid id);
     }

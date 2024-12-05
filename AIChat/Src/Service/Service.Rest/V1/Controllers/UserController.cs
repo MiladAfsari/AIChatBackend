@@ -35,12 +35,7 @@ namespace Service.Rest.V1.Controllers
 
             var result = await _mediator.Send(new LoginCommand(request.UserName, request.Password));
 
-            if (!result.Success)
-            {
-                return Unauthorized(result.ErrorMessage);
-            }
-
-            return Ok(result);
+            return result.Success ? Ok(result) : Unauthorized(result.ErrorMessage);
         }
 
         [AllowAnonymous]
@@ -56,13 +51,9 @@ namespace Service.Rest.V1.Controllers
             try
             {
                 var result = await _mediator.Send(new CreateUserCommand(request.UserName, request.Password, request.Role, request.FullName));
-
-                if (result)
-                    return Ok(true);
-
-                return BadRequest("User creation failed.");
+                return result ? Ok(true) : BadRequest("User creation failed.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Log the exception (consider using a logging framework)
                 return StatusCode(500, "Internal server error");
@@ -78,13 +69,29 @@ namespace Service.Rest.V1.Controllers
         public async Task<ActionResult<UserViewModel>> GetUserByUserName([FromRoute] string username)
         {
             var result = await _mediator.Send(new GetUserByUserNameQuery(username));
+            return result == null ? NotFound("User not found.") : Ok(result);
+        }
 
-            if (result == null)
+        [Authorize]
+        [HttpPost("ChangePassword")]
+        [SwaggerOperation("Change user password")]
+        [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
+        [SwaggerResponse((int)HttpStatusCode.Unauthorized, "Invalid old password")]
+        [SwaggerResponse((int)HttpStatusCode.OK, "Password changed successfully", typeof(bool))]
+        [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
+        public async Task<ActionResult<bool>> ChangePassword([FromBody] ChangePasswordModel request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
             {
-                return NotFound("User not found.");
+                var result = await _mediator.Send(new ChangePasswordCommand(request.UserName, request.OldPassword, request.NewPassword));
+                return result ? Ok(true) : Unauthorized("Invalid old password.");
             }
-
-            return Ok(result);
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal server error");
+            }
         }
     }
 }
