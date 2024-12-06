@@ -2,6 +2,8 @@
 using Application.Command.ViewModels;
 using Application.Query.UserQueries;
 using Application.Query.ViewModels;
+using Hangfire;
+using Infrastructure.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,14 +15,15 @@ namespace Service.Rest.V1.Controllers
 {
     [ApiController]
     [Route("api/users")]
-    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IBackgroundJobClient _backgroundJobClient;
 
-        public UserController(IMediator mediator)
+        public UserController(IMediator mediator, IBackgroundJobClient backgroundJobClient)
         {
             _mediator = mediator;
+            _backgroundJobClient = backgroundJobClient;
         }
 
         [AllowAnonymous]
@@ -92,6 +95,36 @@ namespace Service.Rest.V1.Controllers
             {
                 return StatusCode(500, "Internal server error");
             }
+        }
+
+        [HttpPost("ImportUsers")]
+        [Authorize]
+        [SwaggerOperation(
+           Summary = "Import users from file",
+           Description = "Uploads an Excel file to import users",
+           OperationId = "ImportUsers",
+           Tags = new[] { "User" }
+       )]
+        [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid file")]
+        [SwaggerResponse((int)HttpStatusCode.OK, "User import has been scheduled")]
+        [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
+        [Consumes("multipart/form-data")]
+        public IActionResult ImportUsers(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Invalid file.");
+            }
+
+            var filePath = Path.Combine(Path.GetTempPath(), file.FileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                file.CopyTo(stream);
+            }
+
+            _backgroundJobClient.Enqueue<UserImportService>(service => service.ImportUsersFromExcelAsync(filePath));
+
+            return Ok("User import has been scheduled.");
         }
     }
 }

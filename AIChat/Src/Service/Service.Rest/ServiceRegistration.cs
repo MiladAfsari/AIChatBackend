@@ -7,13 +7,17 @@ using Domain.Core.Entities.FeedbackTemplateAggregate;
 using Domain.Core.Entities.UserTemplateAggregate;
 using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Infrastructure.Data.Repository.EfCore.Repositories;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Shared.MediatR;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text;
 
@@ -46,6 +50,11 @@ namespace Service.Rest
                 options.EnableAutoValidation = true;
             });
         }
+        public static void RegisterHangfireService(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddHangfire(config => config.UsePostgreSqlStorage(configuration["ConnectionStrings:HangfireConnection"]));
+            services.AddHangfireServer();
+        }
         public static void RegisterAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -76,6 +85,41 @@ namespace Service.Rest
         public static void RegisterTokenService(this IServiceCollection services)
         {
             services.AddScoped<ITokenService, TokenService>();
+        }
+    }
+    public class SwaggerFileOperationFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            var fileParameters = context.MethodInfo.GetParameters()
+                .Where(p => p.ParameterType == typeof(IFormFile));
+
+            if (fileParameters.Any())
+            {
+                operation.Parameters.Clear();
+                operation.RequestBody = new OpenApiRequestBody
+                {
+                    Content = new Dictionary<string, OpenApiMediaType>
+                    {
+                        ["multipart/form-data"] = new OpenApiMediaType
+                        {
+                            Schema = new OpenApiSchema
+                            {
+                                Type = "object",
+                                Properties = new Dictionary<string, OpenApiSchema>
+                                {
+                                    ["file"] = new OpenApiSchema
+                                    {
+                                        Type = "string",
+                                        Format = "binary"
+                                    }
+                                },
+                                Required = new HashSet<string> { "file" }
+                            }
+                        }
+                    }
+                };
+            }
         }
     }
 }

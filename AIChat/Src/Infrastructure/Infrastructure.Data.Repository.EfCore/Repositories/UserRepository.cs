@@ -1,39 +1,86 @@
 ﻿using Domain.Core.Entities.UserTemplateAggregate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using OfficeOpenXml;
 
 namespace Infrastructure.Data.Repository.EfCore.Repositories
 {
     public class UserRepository : IUserRepository
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<UserRepository> _logger;
 
-        public UserRepository(UserManager<ApplicationUser> userManager)
+        public UserRepository(UserManager<ApplicationUser> userManager, ILogger<UserRepository> logger)
         {
             _userManager = userManager;
+            _logger = logger;
         }
 
-      
+
         // Bulk import users with roles from Excel data
-        public async Task<bool> AddUsersFromExcelAsync(IEnumerable<(string UserName, string Password, string Role)> usersData)
+        public async Task<bool> AddUsersFromExcelAsync(string filePath)
         {
-            foreach (var (userName, password, role) in usersData)
+            var usersData = new List<(string UserName, string Password, string Role, string FullName)>();
+
+            try
             {
-                if (!await AddUserWithRoleAsync(
-                        new ApplicationUser
-                        {
-                            UserName = userName,
-                            FullName = userName,
-                            Email = $"{userName}@example.com"
-                        },
-                        password,
-                        role))
+                using (var package = new ExcelPackage(new FileInfo(filePath)))
                 {
-                    return false; // Stop if any user creation fails
+                    var worksheet = package.Workbook.Worksheets[0];
+                    var rowCount = worksheet.Dimension.Rows;
+
+                    for (int row = 2; row <= rowCount; row++)
+                    {
+                        var userName = worksheet.Cells[row, 1].Text;
+                        var password = worksheet.Cells[row, 2].Text;
+                        var role = worksheet.Cells[row, 3].Text;
+                        var fullName = worksheet.Cells[row, 4].Text;
+
+                        // Validate data
+                        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(role))
+                        {
+                            _logger.LogWarning("Invalid data at row {RowNumber}: {UserName}, {Password}, {Role}", row, userName, password, role);
+                            continue;
+                        }
+                        var existingUser = await _userManager.FindByNameAsync(userName);
+                        if (existingUser != null)
+                        {
+                            _logger.LogWarning("User {UserName} already exists and will not be added again.", userName);
+                            continue;
+                        }
+                        usersData.Add((userName, password, role, fullName));
+                    }
                 }
+
+                var tasks = usersData.Select(async userData =>
+                {
+
+
+                    var user = new ApplicationUser
+                    {
+                        UserName = userData.UserName,
+                        FullName = userData.FullName
+                    };
+
+                    var result = await AddUserWithRoleAsync(user, userData.Password, userData.Role);
+                    if (!result)
+                    {
+                        _logger.LogError("Failed to add user {UserName} with role {Role}", userData.UserName, userData.Role);
+                    }
+                });
+
+                await Task.WhenAll(tasks);
+
+                return true;
             }
-            return true;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while importing users from Excel file {FilePath}", filePath);
+                return false;
+            }
         }
+
 
         // Get a user by username
         public async Task<ApplicationUser> GetUserByUserNameAsync(string userName)

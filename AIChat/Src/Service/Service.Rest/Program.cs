@@ -1,5 +1,7 @@
+using Hangfire;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 namespace Service.Rest
 {
@@ -19,15 +21,19 @@ namespace Service.Rest
             builder.Services.AddOptions();
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Service.Rest", Version = "v1" });
+                c.OperationFilter<SwaggerFileOperationFilter>();
+            });
 
             builder.Services.RegisterMediatorService();
             builder.Services.RegisterRepositories();
             builder.Services.RegisterUnitOfWorks();
             builder.Services.RegisterTokenService();
             builder.Services.RegisterAuthentication(builder.Configuration);
+            builder.Services.RegisterHangfireService(builder.Configuration);
 
             // Register ILogger
             builder.Services.AddLogging();
@@ -45,6 +51,8 @@ namespace Service.Rest
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseEndpoints(cfg => { cfg.MapControllers(); });
+
+            app.UseHangfireDashboard();
             app.Run();
         }
     }
