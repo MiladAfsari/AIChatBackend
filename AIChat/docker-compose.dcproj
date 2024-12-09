@@ -4,7 +4,7 @@
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
     <DockerPublishLocally>False</DockerPublishLocally>
-    <ProjectGuid>137b0644-7650-4b55-b23c-08684aa09639</ProjectGuid>
+    <ProjectGuid>c7eb35aa-f30a-4132-bc71-3e3d6eefaf71</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
     <DockerServiceName>service.rest</DockerServiceName>

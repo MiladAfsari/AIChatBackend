@@ -98,7 +98,7 @@ namespace Service.Rest.V1.Controllers
         }
 
         [HttpPost("ImportUsers")]
-        [Authorize]
+        //[Authorize]
         [SwaggerOperation(
            Summary = "Import users from file",
            Description = "Uploads an Excel file to import users",
