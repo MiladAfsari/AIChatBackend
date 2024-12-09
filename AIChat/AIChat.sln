@@ -4,10 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DDB377D5-754B-4EB0-9186-F07A4ED7EB8D}"
-	ProjectSection(SolutionItems) = preProject
-		Solution Items\.dockerignore = Solution Items\.dockerignore
-		..\README.md = ..\README.md
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{A3A8061E-9B40-4F8D-9226-03830314DA26}"
 EndProject
@@ -64,8 +60,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Services", "Src\Infrastructure\Infrastructure.Services\Infrastructure.Services.csproj", "{D9BBE239-4F66-4A87-8AE8-0BCFC7DC2E81}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.UnitTest", "Tests\Service.UnitTest\Service.UnitTest.csproj", "{CB0A020B-FD80-461E-82C9-067291CEECE0}"
-EndProject
-Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{C7EB35AA-F30A-4132-BC71-3E3D6EEFAF71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -157,10 +151,6 @@ Global
 		{CB0A020B-FD80-461E-82C9-067291CEECE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB0A020B-FD80-461E-82C9-067291CEECE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB0A020B-FD80-461E-82C9-067291CEECE0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7EB35AA-F30A-4132-BC71-3E3D6EEFAF71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7EB35AA-F30A-4132-BC71-3E3D6EEFAF71}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7EB35AA-F30A-4132-BC71-3E3D6EEFAF71}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7EB35AA-F30A-4132-BC71-3E3D6EEFAF71}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
