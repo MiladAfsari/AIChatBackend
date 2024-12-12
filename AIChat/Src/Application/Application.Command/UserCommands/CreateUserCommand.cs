@@ -40,7 +40,7 @@ namespace Application.Command.UserCommands
                 var user = new ApplicationUser
                 {
                     UserName = request.UserName,
-                    Email = $"{request.UserName}@example.com", // Uncomment if needed
+                    //Email = $"{request.UserName}@example.com", // Uncomment if needed
                     FullName = request.FullName
                 };
 

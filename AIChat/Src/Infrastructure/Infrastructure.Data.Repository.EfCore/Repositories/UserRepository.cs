@@ -9,12 +9,14 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
     public class UserRepository : IUserRepository
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly ILogger<UserRepository> _logger;
 
-        public UserRepository(UserManager<ApplicationUser> userManager, ILogger<UserRepository> logger)
+        public UserRepository(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<Guid>> roleManager, ILogger<UserRepository> logger)
         {
             _userManager = userManager;
             _logger = logger;
+            _roleManager = roleManager;
         }
 
 
@@ -92,11 +94,49 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         // Add a single user with a role
         public async Task<bool> AddUserWithRoleAsync(ApplicationUser user, string password, string role)
         {
-            var createResult = await _userManager.CreateAsync(user, password);
-            if (!createResult.Succeeded) return false;
+            try
+            {
+                var createResult = await _userManager.CreateAsync(user, password);
+                if (!createResult.Succeeded)
+                {
+                    _logger.LogError("Failed to create user {UserName}", user.UserName);
+                    return false;
+                }
 
-            var roleResult = await _userManager.AddToRoleAsync(user, role);
-            return roleResult.Succeeded;
+                if (string.IsNullOrEmpty(role))
+                {
+                    _logger.LogError("Role is null or empty for user {UserName}", user.UserName);
+                    await _userManager.DeleteAsync(user); // Rollback user creation if role is null or empty
+                    return false;
+                }
+
+                var roleExists = await _roleManager.RoleExistsAsync(role);
+                if (!roleExists)
+                {
+                    var roleResult = await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = role });
+                    if (!roleResult.Succeeded)
+                    {
+                        _logger.LogError("Failed to create role {Role}", role);
+                        await _userManager.DeleteAsync(user); // Rollback user creation if role creation fails
+                        return false;
+                    }
+                }
+
+                var addToRoleResult = await _userManager.AddToRoleAsync(user, role);
+                if (!addToRoleResult.Succeeded)
+                {
+                    _logger.LogError("Failed to add role {Role} to user {UserName}", role, user.UserName);
+                    await _userManager.DeleteAsync(user); // Rollback user creation if role assignment fails
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while adding user {UserName} with role {Role}", user.UserName, role);
+                return false;
+            }
         }
 
         // Authenticate user with credentials
@@ -129,7 +169,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         // Update user details
         public async Task<bool> UpdateUserAsync(ApplicationUser user)
         {
-            var existingUser = await _userManager.FindByIdAsync(user.Id);
+            var existingUser = await _userManager.FindByIdAsync(user.Id.ToString());
             if (existingUser == null) return false;
 
             existingUser.FullName = user.FullName;

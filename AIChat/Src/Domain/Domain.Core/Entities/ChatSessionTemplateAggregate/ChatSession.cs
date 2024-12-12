@@ -8,7 +8,7 @@ namespace Domain.Core.Entities.ChatSessionTemplateAggregate
     {
         public string SessionName { get; set; }
         public string Description { get; set; } // Optional metadata about the session
-        public string ApplicationUserId { get; set; }
+        public Guid ApplicationUserId { get; set; }
         public ApplicationUser ApplicationUser { get; set; }
         public ICollection<ChatMessage> ChatMessages { get; set; } = new List<ChatMessage>();
     }

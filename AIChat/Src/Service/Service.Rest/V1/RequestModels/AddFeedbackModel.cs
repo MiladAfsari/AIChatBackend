@@ -3,7 +3,7 @@
     public class AddFeedbackModel
     {
         public Guid ChatMessageId { get; set; }
-        public string ApplicationUserId { get; set; }
+        public Guid ApplicationUserId { get; set; }
         public bool IsLiked { get; set; }
     }
 }

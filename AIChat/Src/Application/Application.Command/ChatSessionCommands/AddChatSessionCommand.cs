@@ -9,9 +9,9 @@ namespace Application.Command.ChatSessionCommands
     {
         public string SessionName { get; private set; }
         public string Description { get; private set; }
-        public string ApplicationUserId { get; private set; }
+        public Guid ApplicationUserId { get; private set; }
 
-        public AddChatSessionCommand(string sessionName, string description, string applicationUserId)
+        public AddChatSessionCommand(string sessionName, string description, Guid applicationUserId)
         {
             SessionName = sessionName;
             Description = description;

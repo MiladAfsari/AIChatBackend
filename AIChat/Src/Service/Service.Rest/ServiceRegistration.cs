@@ -31,6 +31,7 @@ namespace Service.Rest
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
             services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
+            services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
         }
         public static void RegisterUnitOfWorks(this IServiceCollection services)
@@ -55,12 +56,22 @@ namespace Service.Rest
             services.AddHangfire(config => config.UsePostgreSqlStorage(configuration["ConnectionStrings:HangfireConnection"]));
             services.AddHangfireServer();
         }
-        public static void RegisterAuthentication(this IServiceCollection services, IConfiguration configuration)
+        public static void RegisterIdentityAuthentication(this IServiceCollection services)
         {
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-               .AddEntityFrameworkStores<ApplicationDbContext>()
-               .AddDefaultTokenProviders();
-
+            services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
+            {
+                options.Password.RequireDigit = false;
+                options.Password.RequiredLength = 1;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequiredUniqueChars = 0;
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+        }
+        public static void RegisterJWTAuthentication(this IServiceCollection services, IConfiguration configuration)
+        {
             var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]);
 
             services.AddAuthentication(options =>

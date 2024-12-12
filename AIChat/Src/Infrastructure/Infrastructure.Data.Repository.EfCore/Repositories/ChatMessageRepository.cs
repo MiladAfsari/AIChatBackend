@@ -31,7 +31,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         }
 
         // Get all chat messages for a specific user
-        public async Task<IEnumerable<ChatMessage>> GetAllChatsByUserIdAsync(string userId)
+        public async Task<IEnumerable<ChatMessage>> GetAllChatsByUserIdAsync(Guid userId)
         {
             return await _context.ChatMessages
                 .Where(message => message.ChatSession.ApplicationUserId == userId)

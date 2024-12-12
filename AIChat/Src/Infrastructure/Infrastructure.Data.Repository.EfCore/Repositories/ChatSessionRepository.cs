@@ -40,7 +40,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
             return await _context.ChatSessions.FindAsync(id);
         }
 
-        public async Task<IEnumerable<ChatSession>> GetByUserIdAsync(string userId)
+        public async Task<IEnumerable<ChatSession>> GetByUserIdAsync(Guid userId)
         {
             return await _context.ChatSessions
                 .Where(cs => cs.ApplicationUserId == userId)

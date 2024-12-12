@@ -4,7 +4,7 @@
     {
         Task<Feedback> GetByIdAsync(Guid id);
         Task<IEnumerable<Feedback>> GetAllAsync();
-        Task<IEnumerable<Feedback>> GetByUserIdAsync(string userId); // Get feedback by user
+        Task<IEnumerable<Feedback>> GetByUserIdAsync(Guid userId); // Get feedback by user
         Task<IEnumerable<Feedback>> GetByMessageIdAsync(Guid messageId); // Get feedback by message ID
         Task AddAsync(Feedback feedback);
         Task UpdateAsync(Feedback feedback);

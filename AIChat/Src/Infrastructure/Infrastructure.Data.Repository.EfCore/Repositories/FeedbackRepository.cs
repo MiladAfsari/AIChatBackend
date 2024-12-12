@@ -24,7 +24,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         }
 
         // Get feedback by specific user (via ApplicationUserId)
-        public async Task<IEnumerable<Feedback>> GetByUserIdAsync(string userId)
+        public async Task<IEnumerable<Feedback>> GetByUserIdAsync(Guid userId)
         {
             return await _context.Feedbacks
                 .Where(feedback => feedback.ApplicationUserId == userId)

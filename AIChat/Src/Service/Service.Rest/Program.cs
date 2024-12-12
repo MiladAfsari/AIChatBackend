@@ -29,10 +29,11 @@ namespace Service.Rest
             });
 
             builder.Services.RegisterMediatorService();
+            builder.Services.RegisterIdentityAuthentication();
             builder.Services.RegisterRepositories();
             builder.Services.RegisterUnitOfWorks();
             builder.Services.RegisterTokenService();
-            builder.Services.RegisterAuthentication(builder.Configuration);
+            builder.Services.RegisterJWTAuthentication(builder.Configuration);
             builder.Services.RegisterHangfireService(builder.Configuration);
 
             // Register ILogger
@@ -52,7 +53,7 @@ namespace Service.Rest
             app.UseAuthorization();
             app.UseEndpoints(cfg => { cfg.MapControllers(); });
 
-            app.UseHangfireDashboard();
+            //app.UseHangfireDashboard();
             app.Run();
         }
     }

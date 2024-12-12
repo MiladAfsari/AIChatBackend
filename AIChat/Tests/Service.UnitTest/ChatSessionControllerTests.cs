@@ -27,7 +27,7 @@ namespace Service.UnitTest
             {
                 SessionName = "Test Session",
                 Description = "Test Description",
-                ApplicationUserId = "TestUserId"
+                ApplicationUserId = Guid.NewGuid()
             };
             var expectedGuid = Guid.NewGuid();
             _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatSessionCommand>(), It.IsAny<CancellationToken>()))
@@ -64,7 +64,7 @@ namespace Service.UnitTest
             {
                 SessionName = "Test Session",
                 Description = "Test Description",
-                ApplicationUserId = "TestUserId"
+                ApplicationUserId = Guid.NewGuid()
             };
             _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatSessionCommand>(), It.IsAny<CancellationToken>()))
                          .ThrowsAsync(new Exception());

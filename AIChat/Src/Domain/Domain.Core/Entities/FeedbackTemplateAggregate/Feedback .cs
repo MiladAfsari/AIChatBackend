@@ -11,7 +11,7 @@ namespace Domain.Core.Entities.FeedbackTemplateAggregate
         public bool IsLiked { get; set; }
 
         // Reference to the User who provided the feedback (direct relationship)
-        public string ApplicationUserId { get; set; }
+        public Guid ApplicationUserId { get; set; }
         public ApplicationUser ApplicationUser { get; set; }
     }
 }

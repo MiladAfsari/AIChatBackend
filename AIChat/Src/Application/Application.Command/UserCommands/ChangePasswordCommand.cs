@@ -22,9 +22,9 @@ namespace Application.Command.UserCommands
     {
         private readonly IUserRepository _userRepository;
         private readonly IApplicationDbContextUnitOfWork _unitOfWork;
-        private readonly ILogger<CreateUserCommandHandler> _logger;
+        private readonly ILogger<ChangePasswordCommandHandler> _logger;
 
-        public ChangePasswordCommandHandler(IUserRepository userRepository, IApplicationDbContextUnitOfWork unitOfWork, ILogger<CreateUserCommandHandler> logger)
+        public ChangePasswordCommandHandler(IUserRepository userRepository, IApplicationDbContextUnitOfWork unitOfWork, ILogger<ChangePasswordCommandHandler> logger)
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;

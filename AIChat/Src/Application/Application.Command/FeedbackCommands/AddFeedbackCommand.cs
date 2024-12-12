@@ -10,10 +10,10 @@ namespace Application.Command.FeedbackCommands
     public class AddFeedbackCommand : IRequest<bool>
     {
         public Guid ChatMessageId { get; private set; }
-        public string ApplicationUserId { get; private set; }
+        public Guid ApplicationUserId { get; private set; }
         public bool IsLiked { get; private set; }
 
-        public AddFeedbackCommand(Guid chatMessageId, string applicationUserId, bool isLiked)
+        public AddFeedbackCommand(Guid chatMessageId, Guid applicationUserId, bool isLiked)
         {
             ChatMessageId = chatMessageId;
             ApplicationUserId = applicationUserId;
@@ -23,11 +23,11 @@ namespace Application.Command.FeedbackCommands
 
     public class AddFeedbackCommandHandler : IRequestHandler<AddFeedbackCommand, bool>
     {
-        private readonly FeedbackRepository _feedbackRepository;
+        private readonly IFeedbackRepository _feedbackRepository;
         private readonly IApplicationDbContextUnitOfWork _unitOfWork;
-        private readonly ILogger<AddChatMessageCommandHandler> _logger;
+        private readonly ILogger<AddFeedbackCommandHandler> _logger;
 
-        public AddFeedbackCommandHandler(FeedbackRepository feedbackRepository, IApplicationDbContextUnitOfWork unitOfWork, ILogger<AddChatMessageCommandHandler> logger)
+        public AddFeedbackCommandHandler(IFeedbackRepository feedbackRepository, IApplicationDbContextUnitOfWork unitOfWork, ILogger<AddFeedbackCommandHandler> logger)
         {
             _feedbackRepository = feedbackRepository;
             _unitOfWork = unitOfWork;
