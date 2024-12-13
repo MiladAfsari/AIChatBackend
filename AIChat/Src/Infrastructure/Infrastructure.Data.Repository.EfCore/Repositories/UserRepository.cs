@@ -23,6 +23,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         // Bulk import users with roles from Excel data
         public async Task<bool> AddUsersFromExcelAsync(string filePath)
         {
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             var usersData = new List<(string UserName, string Password, string Role, string FullName)>();
 
             try
@@ -36,7 +37,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
                     {
                         var userName = worksheet.Cells[row, 1].Text;
                         var password = worksheet.Cells[row, 2].Text;
-                        var role = worksheet.Cells[row, 3].Text;
+                        var role = string.IsNullOrWhiteSpace(worksheet.Cells[row, 3].Text) ? "Staff" : worksheet.Cells[row, 3].Text;
                         var fullName = worksheet.Cells[row, 4].Text;
 
                         // Validate data
@@ -55,10 +56,8 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
                     }
                 }
 
-                var tasks = usersData.Select(async userData =>
+                foreach (var userData in usersData)
                 {
-
-
                     var user = new ApplicationUser
                     {
                         UserName = userData.UserName,
@@ -70,9 +69,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
                     {
                         _logger.LogError("Failed to add user {UserName} with role {Role}", userData.UserName, userData.Role);
                     }
-                });
-
-                await Task.WhenAll(tasks);
+                }
 
                 return true;
             }

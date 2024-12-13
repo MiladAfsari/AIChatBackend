@@ -29,14 +29,15 @@ namespace Service.UnitTest
                 Question = "What is the time?",
                 Answer = "It's 2 PM."
             };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatMessageCommand>(), default)).ReturnsAsync(true);
+            var expectedGuid = Guid.NewGuid();
+            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatMessageCommand>(), default)).ReturnsAsync((Guid?)expectedGuid);
 
             // Act
             var result = await _controller.AddChatMessage(addChatMessageModel);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.True((bool)okResult.Value);
+            Assert.Equal(expectedGuid, okResult.Value);
         }
 
         [Fact]

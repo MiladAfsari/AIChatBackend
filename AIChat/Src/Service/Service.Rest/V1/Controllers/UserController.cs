@@ -71,6 +71,11 @@ namespace Service.Rest.V1.Controllers
         [SwaggerResponse((int)HttpStatusCode.OK, "User retrieved successfully", typeof(UserViewModel))]
         public async Task<ActionResult<UserViewModel>> GetUserByUserName([FromRoute] string username)
         {
+            if (string.IsNullOrEmpty(username))
+            {
+                return BadRequest("Username cannot be null or empty.");
+            }
+
             var result = await _mediator.Send(new GetUserByUserNameQuery(username));
             return result == null ? NotFound("User not found.") : Ok(result);
         }

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Command.ChatMessageCommands
 {
-    public class AddChatMessageCommand : IRequest<bool>
+    public class AddChatMessageCommand : IRequest<Guid?>
     {
         public Guid ChatSessionId { get; private set; }
         public string Question { get; private set; }
@@ -19,7 +19,7 @@ namespace Application.Command.ChatMessageCommands
         }
     }
 
-    public class AddChatMessageCommandHandler : IRequestHandler<AddChatMessageCommand, bool>
+    public class AddChatMessageCommandHandler : IRequestHandler<AddChatMessageCommand, Guid?>
     {
         private readonly IChatMessageRepository _chatMessageRepository;
         private readonly IApplicationDbContextUnitOfWork _unitOfWork;
@@ -32,7 +32,7 @@ namespace Application.Command.ChatMessageCommands
             _logger = logger;
         }
 
-        public async Task<bool> Handle(AddChatMessageCommand request, CancellationToken cancellationToken)
+        public async Task<Guid?> Handle(AddChatMessageCommand request, CancellationToken cancellationToken)
         {
             try
             {
@@ -45,12 +45,12 @@ namespace Application.Command.ChatMessageCommands
 
                 await _chatMessageRepository.AddAsync(chatMessage);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
-                return true;
+                return chatMessage.Id;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error adding chat message");
-                return false;
+                return null;
             }
         }
     }

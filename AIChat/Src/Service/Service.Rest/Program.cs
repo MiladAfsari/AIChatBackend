@@ -22,11 +22,7 @@ namespace Service.Rest
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Service.Rest", Version = "v1" });
-                c.OperationFilter<SwaggerFileOperationFilter>();
-            });
+            builder.Services.RegisterSwaggerService();
 
             builder.Services.RegisterMediatorService();
             builder.Services.RegisterIdentityAuthentication();

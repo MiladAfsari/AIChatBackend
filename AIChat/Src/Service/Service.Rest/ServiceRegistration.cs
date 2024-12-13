@@ -38,6 +38,39 @@ namespace Service.Rest
         {
             services.AddScoped<IApplicationDbContextUnitOfWork, ApplicationDbContextUnitOfWork>();
         }
+        public static void RegisterSwaggerService(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Service.Rest", Version = "v1" });
+                c.OperationFilter<SwaggerFileOperationFilter>();
+
+                // Add JWT Authentication to Swagger
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter JWT with Bearer into field",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] { }
+                    }
+                });
+            });
+        }
         public static void RegisterMediatorService(this IServiceCollection services)
         {
             services.AddMediatorService(options =>

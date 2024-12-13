@@ -23,9 +23,9 @@ namespace Service.Rest.V1.Controllers
         [HttpPost("AddChatMessage")]
         [SwaggerOperation("Add a new chat message")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
-        [SwaggerResponse((int)HttpStatusCode.OK, "Chat message added successfully", typeof(bool))]
+        [SwaggerResponse((int)HttpStatusCode.OK, "Chat message added successfully", typeof(Guid?))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
-        public async Task<ActionResult<bool>> AddChatMessage([FromBody] AddChatMessageModel request)
+        public async Task<ActionResult<Guid?>> AddChatMessage([FromBody] AddChatMessageModel request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -33,7 +33,7 @@ namespace Service.Rest.V1.Controllers
             {
                 var result = await _mediator.Send(new AddChatMessageCommand(request.ChatSessionId, request.Question, request.Answer));
 
-                return result ? Ok(result) : StatusCode(500, "Error adding chat message");
+                return result.HasValue ? Ok(result) : StatusCode(500, "Error adding chat message");
             }
             catch (Exception)
             {
