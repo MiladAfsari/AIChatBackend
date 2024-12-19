@@ -14,6 +14,7 @@ using Infrastructure.Data.Repository.EfCore.Repositories;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Shared.MediatR;
@@ -125,6 +126,26 @@ namespace Service.Rest
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
             });
+        }
+        public static void ApplyMigrations(this WebApplication app)
+        {
+            if (!app.Environment.IsDevelopment())
+            {
+                using (var scope = app.Services.CreateScope())
+                {
+                    var services = scope.ServiceProvider;
+                    try
+                    {
+                        var context = services.GetRequiredService<ApplicationDbContext>();
+                        context.Database.Migrate();
+                    }
+                    catch (Exception ex)
+                    {
+                        var logger = services.GetRequiredService<ILogger<Program>>();
+                        logger.LogError(ex, "An error occurred while applying migrations.");
+                    }
+                }
+            }
         }
         public static void RegisterTokenService(this IServiceCollection services)
         {

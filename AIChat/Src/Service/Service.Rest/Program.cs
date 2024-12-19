@@ -37,6 +37,8 @@ namespace Service.Rest
 
             var app = builder.Build();
 
+            app.ApplyMigrations();
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
