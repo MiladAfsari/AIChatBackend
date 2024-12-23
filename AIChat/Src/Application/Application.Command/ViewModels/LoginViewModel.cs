@@ -1,6 +1,6 @@
 ﻿namespace Application.Command.ViewModels
 {
-    public class LoginResult
+    public class LoginViewModel
     {
         public bool Success { get; set; }
         public string Token { get; set; }

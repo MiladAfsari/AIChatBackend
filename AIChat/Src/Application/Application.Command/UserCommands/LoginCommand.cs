@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Command.UserCommands
 {
-    public class LoginCommand : IRequest<LoginResult>
+    public class LoginCommand : IRequest<LoginViewModel>
     {
         public string UserName { get; }
         public string Password { get; }
@@ -20,7 +20,7 @@ namespace Application.Command.UserCommands
         }
     }
 }
-public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
+public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginViewModel>
 {
     private readonly ITokenService _tokenService;
     private readonly IUserRepository _userRepository;
@@ -33,7 +33,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
         _logger = logger;
     }
 
-    public async Task<LoginResult> Handle(LoginCommand request, CancellationToken cancellationToken)
+    public async Task<LoginViewModel> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         if (request == null)
         {
@@ -47,7 +47,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
             if (user == null || !VerifyPassword(user, request.Password))
             {
                 _logger.LogWarning("Invalid login attempt for user: {UserName}", request.UserName);
-                return new LoginResult
+                return new LoginViewModel
                 {
                     Success = false,
                     ErrorMessage = "Invalid username or password."
@@ -57,7 +57,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
             // Generate token
             var token = _tokenService.GenerateToken(user);
 
-            return new LoginResult
+            return new LoginViewModel
             {
                 Success = true,
                 Token = token
@@ -66,7 +66,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResult>
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred during login for user: {UserName}", request.UserName);
-            return new LoginResult
+            return new LoginViewModel
             {
                 Success = false,
                 ErrorMessage = "An error occurred while processing your request."

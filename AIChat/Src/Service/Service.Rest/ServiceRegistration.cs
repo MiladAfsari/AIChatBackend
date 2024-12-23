@@ -149,7 +149,8 @@ namespace Service.Rest
         }
         public static void RegisterTokenService(this IServiceCollection services)
         {
-            services.AddScoped<ITokenService, TokenService>();
+            services.AddSingleton<ITokenService, TokenService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
     }
     public class SwaggerFileOperationFilter : IOperationFilter

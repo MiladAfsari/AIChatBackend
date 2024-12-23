@@ -1,3 +1,4 @@
+using Autofac.Core;
 using Hangfire;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +20,7 @@ namespace Service.Rest
 
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddOptions();
-
-            builder.Services.AddControllers();
+            
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.RegisterSwaggerService();
 
@@ -34,6 +34,12 @@ namespace Service.Rest
 
             // Register ILogger
             builder.Services.AddLogging();
+
+
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add<TokenValidationFilter>();
+            });
 
             var app = builder.Build();
 

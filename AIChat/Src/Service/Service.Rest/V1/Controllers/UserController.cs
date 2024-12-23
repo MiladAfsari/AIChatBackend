@@ -31,8 +31,8 @@ namespace Service.Rest.V1.Controllers
         [SwaggerOperation("User login")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
         [SwaggerResponse((int)HttpStatusCode.Unauthorized, "Invalid username or password")]
-        [SwaggerResponse((int)HttpStatusCode.OK, "Login successful", typeof(LoginResult))]
-        public async Task<ActionResult<LoginResult>> Login([FromBody] LoginModel request)
+        [SwaggerResponse((int)HttpStatusCode.OK, "Login successful", typeof(LoginViewModel))]
+        public async Task<ActionResult<LoginViewModel>> Login([FromBody] LoginModel request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -130,6 +130,23 @@ namespace Service.Rest.V1.Controllers
             _backgroundJobClient.Enqueue<UserImportService>(service => service.ImportUsersFromExcelAsync(filePath));
 
             return Ok("User import has been scheduled.");
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        [SwaggerOperation("User logout")]
+        [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
+        [SwaggerResponse((int)HttpStatusCode.OK, "Logout successful", typeof(LogOutViewModel))]
+        public async Task<ActionResult<LogOutViewModel>> Logout([FromBody] string userName)
+        {
+            if (string.IsNullOrEmpty(userName))
+            {
+                return BadRequest("User is not authenticated.");
+            }
+
+            var result = await _mediator.Send(new LogOutCommand(userName));
+
+            return result.Success ? Ok(result) : BadRequest(result.ErrorMessage);
         }
     }
 }

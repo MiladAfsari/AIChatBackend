@@ -30,7 +30,7 @@ namespace Service.UnitTest
         {
             // Arrange
             var loginModel = new LoginModel { UserName = "testuser", Password = "password" };
-            var loginResult = new LoginResult { Success = true, Token = "token" };
+            var loginResult = new LoginViewModel { Success = true, Token = "token" };
             _mediatorMock.Setup(m => m.Send(It.IsAny<LoginCommand>(), default)).ReturnsAsync(loginResult);
 
             // Act
@@ -46,7 +46,7 @@ namespace Service.UnitTest
         {
             // Arrange
             var loginModel = new LoginModel { UserName = "testuser", Password = "password" };
-            var loginResult = new LoginResult { Success = false, ErrorMessage = "Invalid username or password" };
+            var loginResult = new LoginViewModel { Success = false, ErrorMessage = "Invalid username or password" };
             _mediatorMock.Setup(m => m.Send(It.IsAny<LoginCommand>(), default)).ReturnsAsync(loginResult);
 
             // Act
@@ -180,6 +180,38 @@ namespace Service.UnitTest
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal("Invalid file.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task Logout_ReturnsOkResult_WhenLogoutIsSuccessful()
+        {
+            // Arrange
+            var userName = "testuser";
+            var logoutResult = new LogOutViewModel { Success = true };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<LogOutCommand>(), default)).ReturnsAsync(logoutResult);
+
+            // Act
+            var result = await _controller.Logout(userName);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal(logoutResult, okResult.Value);
+        }
+
+        [Fact]
+        public async Task Logout_ReturnsBadRequest_WhenLogoutFails()
+        {
+            // Arrange
+            var userName = "testuser";
+            var logoutResult = new LogOutViewModel { Success = false, ErrorMessage = "Logout failed" };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<LogOutCommand>(), default)).ReturnsAsync(logoutResult);
+
+            // Act
+            var result = await _controller.Logout(userName);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal(logoutResult.ErrorMessage, badRequestResult.Value);
         }
     }
 }
