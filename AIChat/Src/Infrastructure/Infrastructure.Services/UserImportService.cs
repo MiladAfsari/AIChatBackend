@@ -1,4 +1,5 @@
 ﻿using Domain.Core.Entities.UserTemplateAggregate;
+using Domain.Core.UnitOfWorkContracts;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services
@@ -6,11 +7,13 @@ namespace Infrastructure.Services
     public class UserImportService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IApplicationDbContextUnitOfWork _unitOfWork;
         private readonly ILogger<UserImportService> _logger;
 
-        public UserImportService(IUserRepository userRepository, ILogger<UserImportService> logger)
+        public UserImportService(IUserRepository userRepository, IApplicationDbContextUnitOfWork unitOfWork, ILogger<UserImportService> logger)
         {
             _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
@@ -21,6 +24,7 @@ namespace Infrastructure.Services
                 var result = await _userRepository.AddUsersFromExcelAsync(filePath);
                 if (result)
                 {
+                    await _unitOfWork.SaveChangesAsync();
                     _logger.LogInformation("User import from {FilePath} completed successfully.", filePath);
                 }
                 else

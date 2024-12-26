@@ -116,6 +116,24 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                     b.ToTable("Feedback", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Core.Entities.InvalidatedTokenTemplateAggregate.InvalidatedToken", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("InvalidatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("InvalidatedTokens");
+                });
+
             modelBuilder.Entity("Domain.Core.Entities.UserTemplateAggregate.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")

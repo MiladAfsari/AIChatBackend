@@ -4,6 +4,7 @@ using Application.Service.Common;
 using Domain.Core.Entities.ChatMessageTemplateAggregate;
 using Domain.Core.Entities.ChatSessionTemplateAggregate;
 using Domain.Core.Entities.FeedbackTemplateAggregate;
+using Domain.Core.Entities.InvalidatedTokenTemplateAggregate;
 using Domain.Core.Entities.UserTemplateAggregate;
 using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
@@ -34,6 +35,7 @@ namespace Service.Rest
             services.AddScoped<IChatSessionRepository, ChatSessionRepository>();
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
+            services.AddScoped<IInvalidatedTokenRepository, InvalidatedTokenRepository>();
         }
         public static void RegisterUnitOfWorks(this IServiceCollection services)
         {
@@ -149,7 +151,7 @@ namespace Service.Rest
         }
         public static void RegisterTokenService(this IServiceCollection services)
         {
-            services.AddSingleton<ITokenService, TokenService>();
+            services.AddScoped<ITokenService, TokenService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
     }

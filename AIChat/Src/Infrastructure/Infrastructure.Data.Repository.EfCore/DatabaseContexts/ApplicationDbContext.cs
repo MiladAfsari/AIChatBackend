@@ -1,6 +1,7 @@
 ﻿using Domain.Core.Entities.ChatMessageTemplateAggregate;
 using Domain.Core.Entities.ChatSessionTemplateAggregate;
 using Domain.Core.Entities.FeedbackTemplateAggregate;
+using Domain.Core.Entities.InvalidatedTokenTemplateAggregate;
 using Domain.Core.Entities.UserTemplateAggregate;
 using Domain.Core.Exception;
 using Infrastructure.Data.Repository.EfCore.EntityConfigurations;
@@ -21,6 +22,8 @@ namespace Infrastructure.Data.Repository.EfCore.DatabaseContexts
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<ExceptionLog> ExceptionLogs { get; set; }
+
+        public DbSet<InvalidatedToken> InvalidatedTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

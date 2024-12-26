@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Repository.EfCore.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241212173304_Initial")]
+    [Migration("20241226091842_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -117,6 +117,24 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                     b.HasIndex("IsLiked");
 
                     b.ToTable("Feedback", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Core.Entities.InvalidatedTokenTemplateAggregate.InvalidatedToken", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("InvalidatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("InvalidatedTokens");
                 });
 
             modelBuilder.Entity("Domain.Core.Entities.UserTemplateAggregate.ApplicationUser", b =>

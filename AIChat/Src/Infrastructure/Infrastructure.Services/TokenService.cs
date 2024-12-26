@@ -1,9 +1,11 @@
 ﻿using Application.Service.Common;
+using Domain.Core.Entities.InvalidatedTokenTemplateAggregate;
 using Domain.Core.Entities.UserTemplateAggregate;
+using Domain.Core.UnitOfWorkContracts;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -14,24 +16,27 @@ namespace Infrastructure.Services
     {
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private static readonly ConcurrentDictionary<string, DateTime> _invalidatedTokens = new ConcurrentDictionary<string, DateTime>();
         private readonly SymmetricSecurityKey _signingKey;
         private readonly string _issuer;
         private readonly string _audience;
+        private readonly IInvalidatedTokenRepository _invalidatedTokenRepository;
+        private readonly IApplicationDbContextUnitOfWork _unitOfWork;
 
-        public TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IInvalidatedTokenRepository invalidatedTokenRepository, IApplicationDbContextUnitOfWork unitOfWork)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
             _signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             _issuer = _configuration["Jwt:Issuer"];
             _audience = _configuration["Jwt:Audience"];
+            _invalidatedTokenRepository = invalidatedTokenRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public string GenerateToken(ApplicationUser user)
         {
-            var claims = new List<Claim>
-                {
+            var claims = new[]
+            {
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
@@ -55,12 +60,13 @@ namespace Infrastructure.Services
 
         public void InvalidateToken(string token)
         {
-            _invalidatedTokens[token] = DateTime.UtcNow;
+            _invalidatedTokenRepository.InvalidateToken(token);
+            _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
         }
 
         public bool IsTokenValid(string token)
         {
-            if (_invalidatedTokens.ContainsKey(token))
+            if (_invalidatedTokenRepository.GetInvalidatedToken(token) != null)
             {
                 return false;
             }
@@ -77,7 +83,7 @@ namespace Infrastructure.Services
                     ValidIssuer = _issuer,
                     ValidAudience = _audience,
                     IssuerSigningKey = _signingKey
-                }, out SecurityToken validatedToken);
+                }, out _);
             }
             catch
             {
@@ -90,8 +96,7 @@ namespace Infrastructure.Services
         public string GetTokenFromRequest()
         {
             var httpContext = _httpContextAccessor.HttpContext;
-            var token = httpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-            return token;
+            return httpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
         }
     }
 }

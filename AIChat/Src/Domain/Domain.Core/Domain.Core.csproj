@@ -10,6 +10,7 @@
     <Folder Include="Entities\ChatMessageTemplateAggregate\Exceptions\" />
     <Folder Include="Entities\ChatSessionTemplateAggregate\Exceptions\" />
     <Folder Include="Entities\FeedbackTemplateAggregate\Exceptions\" />
+    <Folder Include="Entities\InvalidatedTokenTemplateAggregate\Exceptions\" />
   </ItemGroup>
 
   <ItemGroup>

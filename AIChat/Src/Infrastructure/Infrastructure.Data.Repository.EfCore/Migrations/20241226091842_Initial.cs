@@ -74,6 +74,19 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "InvalidatedTokens",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    InvalidatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvalidatedTokens", x => x.ID);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -348,6 +361,9 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
 
             migrationBuilder.DropTable(
                 name: "Feedback");
+
+            migrationBuilder.DropTable(
+                name: "InvalidatedTokens");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
