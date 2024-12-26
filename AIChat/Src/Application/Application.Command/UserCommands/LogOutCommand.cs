@@ -52,7 +52,7 @@ namespace Application.Command.UserCommands
                 var token = _tokenService.GetTokenFromRequest();
                 if (!string.IsNullOrEmpty(token))
                 {
-                    _tokenService.InvalidateToken(token);
+                    _tokenService.InvalidateToken(token, request.UserName);
                 }
 
                 return new LogOutViewModel

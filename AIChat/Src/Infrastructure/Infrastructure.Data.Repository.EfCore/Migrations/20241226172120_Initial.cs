@@ -78,6 +78,7 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Username = table.Column<string>(type: "text", nullable: false),
                     Token = table.Column<string>(type: "text", nullable: false),
                     InvalidatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },

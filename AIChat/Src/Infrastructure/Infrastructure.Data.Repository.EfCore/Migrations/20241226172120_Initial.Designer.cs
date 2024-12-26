@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Repository.EfCore.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241226091842_Initial")]
+    [Migration("20241226172120_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -129,6 +129,10 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("text");
 

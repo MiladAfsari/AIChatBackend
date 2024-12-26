@@ -137,7 +137,7 @@ namespace Service.Rest.V1.Controllers
         [SwaggerOperation("User logout")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
         [SwaggerResponse((int)HttpStatusCode.OK, "Logout successful", typeof(LogOutViewModel))]
-        public async Task<ActionResult<LogOutViewModel>> Logout([FromBody] string userName)
+        public async Task<ActionResult<LogOutViewModel>> Logout([FromQuery] string userName)
         {
             if (string.IsNullOrEmpty(userName))
             {

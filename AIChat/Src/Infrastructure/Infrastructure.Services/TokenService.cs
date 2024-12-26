@@ -3,7 +3,6 @@ using Domain.Core.Entities.InvalidatedTokenTemplateAggregate;
 using Domain.Core.Entities.UserTemplateAggregate;
 using Domain.Core.UnitOfWorkContracts;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -58,9 +57,9 @@ namespace Infrastructure.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public void InvalidateToken(string token)
+        public void InvalidateToken(string token, string username)
         {
-            _invalidatedTokenRepository.InvalidateToken(token);
+            _invalidatedTokenRepository.InvalidateToken(token, username);
             _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
         }
 

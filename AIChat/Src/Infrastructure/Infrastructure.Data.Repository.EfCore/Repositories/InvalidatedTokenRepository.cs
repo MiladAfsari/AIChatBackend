@@ -19,12 +19,13 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
             return invalidatedToken?.Token;
         }
 
-        public void InvalidateToken(string token)
+        public void InvalidateToken(string token, string username)
         {
             var invalidatedToken = new InvalidatedToken
             {
                 Token = token,
-                InvalidatedAt = DateTime.UtcNow
+                InvalidatedAt = DateTime.UtcNow,
+                Username = username
             };
             _context.InvalidatedTokens.Add(invalidatedToken);
         }
