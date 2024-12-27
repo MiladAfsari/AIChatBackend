@@ -9,6 +9,7 @@ using Domain.Core.Entities.UserTemplateAggregate;
 using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
 using Hangfire;
+using Hangfire.Logging;
 using Hangfire.PostgreSql;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Infrastructure.Data.Repository.EfCore.Repositories;
@@ -18,6 +19,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Shared.MediatR;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
@@ -89,8 +93,15 @@ namespace Service.Rest
         }
         public static void RegisterHangfireService(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddHangfire(config => config.UsePostgreSqlStorage(configuration["ConnectionStrings:HangfireConnection"]));
-            services.AddHangfireServer();
+            try
+            {
+                services.AddHangfire(config => config.UsePostgreSqlStorage(configuration["ConnectionStrings:HangfireConnection"]));
+                services.AddHangfireServer();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
         public static void RegisterIdentityAuthentication(this IServiceCollection services)
         {
@@ -153,6 +164,50 @@ namespace Service.Rest
         {
             services.AddScoped<ITokenService, TokenService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        }
+        public static void ConfigureSerilog(this WebApplicationBuilder builder)
+        {
+            var serviceProvider = builder.Services.BuildServiceProvider();
+            var exceptionLogRepository = serviceProvider.GetRequiredService<IExceptionLogRepository>();
+            var applicationDbContextUnitOfWork = serviceProvider.GetRequiredService<IApplicationDbContextUnitOfWork>();
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Sink(new ExceptionLogSink(exceptionLogRepository, applicationDbContextUnitOfWork))
+                .CreateLogger();
+        }
+
+        public class ExceptionLogSink : ILogEventSink
+        {
+            private readonly IExceptionLogRepository _exceptionLogRepository;
+            private readonly IApplicationDbContextUnitOfWork _applicationDbContextUnitOfWork;
+
+            public ExceptionLogSink(IExceptionLogRepository exceptionLogRepository, IApplicationDbContextUnitOfWork applicationDbContextUnitOfWork)
+            {
+                _exceptionLogRepository = exceptionLogRepository;
+                _applicationDbContextUnitOfWork = applicationDbContextUnitOfWork;
+            }
+
+            public void Emit(LogEvent logEvent)
+            {
+                var exceptionLog = new ExceptionLog
+                {
+                    ExceptionType = logEvent.Exception?.GetType().Name ?? "Log",
+                    Message = logEvent.RenderMessage(),
+                    StackTrace = logEvent.Exception?.StackTrace ?? string.Empty,
+                    InnerException = logEvent.Exception?.InnerException?.Message,
+                    Path = string.Empty,
+                    QueryString = string.Empty,
+                    StatusCode = 0,
+                    ElapsedMilliseconds = 0,
+                    Timestamp = logEvent.Timestamp.UtcDateTime
+                };
+
+                _exceptionLogRepository.LogExceptionAsync(exceptionLog).GetAwaiter().GetResult();
+                _applicationDbContextUnitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
+            }
         }
     }
     public class SwaggerFileOperationFilter : IOperationFilter

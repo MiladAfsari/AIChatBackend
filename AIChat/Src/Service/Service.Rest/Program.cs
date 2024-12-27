@@ -3,6 +3,7 @@ using Hangfire;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 namespace Service.Rest
 {
@@ -12,53 +13,67 @@ namespace Service.Rest
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            try
             {
-                options.UseNpgsql(builder.Configuration["ConnectionStrings:ApplicationDbConnection"]);
-                options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
-            });
+                builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                {
+                    options.UseNpgsql(builder.Configuration["ConnectionStrings:ApplicationDbConnection"]);
+                    options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
+                });
 
-            builder.Services.AddHttpContextAccessor();
-            builder.Services.AddOptions();
-            
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.RegisterSwaggerService();
+                builder.Services.AddHttpContextAccessor();
+                builder.Services.AddOptions();
 
-            builder.Services.RegisterMediatorService();
-            builder.Services.RegisterIdentityAuthentication();
-            builder.Services.RegisterRepositories();
-            builder.Services.RegisterUnitOfWorks();
-            builder.Services.RegisterTokenService();
-            builder.Services.RegisterJWTAuthentication(builder.Configuration);
-            builder.Services.RegisterHangfireService(builder.Configuration);
+                builder.Services.AddEndpointsApiExplorer();
+                builder.Services.RegisterSwaggerService();
 
-            // Register ILogger
-            builder.Services.AddLogging();
+                builder.Services.RegisterMediatorService();
+                builder.Services.RegisterIdentityAuthentication();
+                builder.Services.RegisterRepositories();
+                builder.Services.RegisterUnitOfWorks();
+                builder.Services.RegisterTokenService();
+                builder.Services.RegisterJWTAuthentication(builder.Configuration);
+                builder.Services.RegisterHangfireService(builder.Configuration);
 
+                // Register ILogger
+                builder.Services.AddLogging();
 
-            builder.Services.AddControllers(options =>
-            {
-                options.Filters.Add<TokenValidationFilter>();
-            });
+                // Configure Serilog
+                builder.ConfigureSerilog();
 
-            var app = builder.Build();
+                builder.Services.AddControllers(options =>
+                {
+                    options.Filters.Add<TokenValidationFilter>();
+                });
 
-            app.ApplyMigrations();
+                var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                app.ApplyMigrations();
+
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI();
+                }
+
+                app.UseMiddleware<ExceptionHandlerMiddleware>();
+                app.UseRouting();
+                app.UseAuthentication();
+                app.UseAuthorization();
+                app.UseEndpoints(cfg => { cfg.MapControllers(); });
+
+                //app.UseHangfireDashboard();
+                app.Run();
             }
-
-            app.UseMiddleware<ExceptionHandlerMiddleware>();
-            app.UseRouting();
-            app.UseAuthentication();
-            app.UseAuthorization();
-            app.UseEndpoints(cfg => { cfg.MapControllers(); });
-
-            //app.UseHangfireDashboard();
-            app.Run();
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application start-up failed");
+                throw;
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
     }
 }

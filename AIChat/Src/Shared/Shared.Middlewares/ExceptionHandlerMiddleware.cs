@@ -1,7 +1,5 @@
-﻿using Domain.Core.Exception;
-using Domain.Core.UnitOfWorkContracts;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Http;
+using Serilog;
 using Shared.Exception.Abstraction.Domain;
 using Shared.Exception.Abstraction.Infrastructure;
 using Shared.Middlewares.Models;
@@ -17,7 +15,7 @@ public class ExceptionHandlerMiddleware
         _next = next;
     }
 
-    public async Task InvokeAsync(HttpContext httpContext, IServiceProvider serviceProvider)
+    public async Task InvokeAsync(HttpContext httpContext)
     {
         var stopwatch = Stopwatch.StartNew();
 
@@ -28,13 +26,11 @@ public class ExceptionHandlerMiddleware
         catch (Exception ex)
         {
             stopwatch.Stop();
-            var exceptionLogRepository = serviceProvider.GetRequiredService<IExceptionLogRepository>();
-            var applicationDbContextUnitOfWork = serviceProvider.GetRequiredService<IApplicationDbContextUnitOfWork>();
-            await HandleExceptionAsync(httpContext, ex, stopwatch.ElapsedMilliseconds, exceptionLogRepository, applicationDbContextUnitOfWork);
+            await HandleExceptionAsync(httpContext, ex, stopwatch.ElapsedMilliseconds);
         }
     }
 
-    private async Task HandleExceptionAsync(HttpContext context, Exception exception, long elapsedMilliseconds, IExceptionLogRepository exceptionLogRepository, IApplicationDbContextUnitOfWork applicationDbContextUnitOfWork)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception, long elapsedMilliseconds)
     {
         context.Response.ContentType = "application/json";
 
@@ -58,28 +54,10 @@ public class ExceptionHandlerMiddleware
             ElapsedMilliseconds = elapsedMilliseconds
         };
 
-        await LogExceptionAsync(context, exception, statusCode, elapsedMilliseconds, exceptionLogRepository, applicationDbContextUnitOfWork);
+        // Log to Serilog (console, file, database, etc.)
+        Log.Error(exception, "An error occurred: {Message}", exception.Message);
 
         var result = JsonSerializer.Serialize(errorResponse);
         await context.Response.WriteAsync(result);
-    }
-
-    private async Task LogExceptionAsync(HttpContext context, Exception exception, int statusCode, long elapsedMilliseconds, IExceptionLogRepository exceptionLogRepository, IApplicationDbContextUnitOfWork applicationDbContextUnitOfWork)
-    {
-        var exceptionLog = new ExceptionLog
-        {
-            ExceptionType = exception.GetType().Name,
-            Message = exception.Message,
-            StackTrace = exception.StackTrace ?? string.Empty,
-            InnerException = exception.InnerException?.Message,
-            Path = context.Request.Path,
-            QueryString = context.Request.QueryString.ToString(),
-            StatusCode = statusCode,
-            ElapsedMilliseconds = elapsedMilliseconds,
-            Timestamp = DateTime.UtcNow
-        };
-
-        await exceptionLogRepository.LogExceptionAsync(exceptionLog);
-        await applicationDbContextUnitOfWork.SaveChangesAsync();
     }
 }
