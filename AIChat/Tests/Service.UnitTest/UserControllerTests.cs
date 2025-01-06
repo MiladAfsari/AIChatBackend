@@ -61,7 +61,7 @@ namespace Service.UnitTest
         public async Task CreateUser_ReturnsOkResult_WhenUserIsCreatedSuccessfully()
         {
             // Arrange
-            var createUserModel = new CreateUserModel { UserName = "testuser", Password = "password", Role = "User", FullName = "Test User" };
+            var createUserModel = new CreateUserModel { UserName = "testuser", Password = "password", Role = "User", FullName = "Test User", DepartmentId = 1 };
             _mediatorMock.Setup(m => m.Send(It.IsAny<CreateUserCommand>(), default)).ReturnsAsync(true);
 
             // Act
@@ -76,7 +76,7 @@ namespace Service.UnitTest
         public async Task CreateUser_ReturnsBadRequest_WhenUserCreationFails()
         {
             // Arrange
-            var createUserModel = new CreateUserModel { UserName = "testuser", Password = "password", Role = "User", FullName = "Test User" };
+            var createUserModel = new CreateUserModel { UserName = "testuser", Password = "password", Role = "User", FullName = "Test User", DepartmentId = 1 };
             _mediatorMock.Setup(m => m.Send(It.IsAny<CreateUserCommand>(), default)).ReturnsAsync(false);
 
             // Act

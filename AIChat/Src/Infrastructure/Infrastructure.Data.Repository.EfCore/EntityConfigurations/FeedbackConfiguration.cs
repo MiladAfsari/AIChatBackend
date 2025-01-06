@@ -14,10 +14,10 @@ namespace Infrastructure.Data.Repository.EfCore.EntityConfigurations
                 .HasColumnType("uuid")
                 .ValueGeneratedNever();
 
-            builder.Property(f => f.IsLiked)
+            builder.Property(f => f.Rating)
                 .IsRequired();
 
-            builder.HasIndex(f => f.IsLiked); // Index for faster searches by IsLiked
+            builder.HasIndex(f => f.Rating); 
 
             builder.HasOne(f => f.ChatMessage)
                 .WithOne(cm => cm.Feedback)

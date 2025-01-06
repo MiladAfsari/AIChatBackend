@@ -4,6 +4,6 @@
     {
         public Guid ChatMessageId { get; set; }
         public Guid ApplicationUserId { get; set; }
-        public bool IsLiked { get; set; }
+        public short Rating { get; set; }
     }
 }

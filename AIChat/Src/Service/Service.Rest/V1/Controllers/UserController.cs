@@ -53,7 +53,7 @@ namespace Service.Rest.V1.Controllers
 
             try
             {
-                var result = await _mediator.Send(new CreateUserCommand(request.UserName, request.Password, request.Role, request.FullName));
+                var result = await _mediator.Send(new CreateUserCommand(request.UserName, request.Password, request.Role, request.FullName, request.DepartmentId));
                 return result ? Ok(true) : BadRequest("User creation failed.");
             }
             catch (Exception)

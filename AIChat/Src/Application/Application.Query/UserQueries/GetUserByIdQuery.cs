@@ -36,6 +36,7 @@ namespace Application.Query.UserQueries
                 UserName = user.UserName,
                 FullName = user.FullName,
                 Email = user.Email,
+                DepartmentId = user.DepartmentId,
             };
         }
     }

@@ -152,7 +152,8 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
                     Id = user.Id,
                     UserName = user.UserName,
                     FullName = user.FullName,
-                    Email = user.Email
+                    Email = user.Email,
+                    DepartmentId = user.DepartmentId,
                 })
                 .ToListAsync();
         }

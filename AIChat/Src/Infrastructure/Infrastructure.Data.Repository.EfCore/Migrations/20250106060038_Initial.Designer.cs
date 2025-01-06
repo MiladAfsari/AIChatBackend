@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Data.Repository.EfCore.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241227083254_Initial")]
+    [Migration("20250106060038_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -101,8 +101,8 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsLiked")
-                        .HasColumnType("boolean");
+                    b.Property<short>("Rating")
+                        .HasColumnType("smallint");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -114,7 +114,7 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                     b.HasIndex("ChatMessageId")
                         .IsUnique();
 
-                    b.HasIndex("IsLiked");
+                    b.HasIndex("Rating");
 
                     b.ToTable("Feedback", (string)null);
                 });
@@ -153,6 +153,9 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
+
+                    b.Property<short>("DepartmentId")
+                        .HasColumnType("smallint");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)

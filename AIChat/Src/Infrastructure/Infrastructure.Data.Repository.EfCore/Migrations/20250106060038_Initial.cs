@@ -32,6 +32,7 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     FullName = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    DepartmentId = table.Column<short>(type: "smallint", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -243,8 +244,8 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     ChatMessageId = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsLiked = table.Column<bool>(type: "boolean", nullable: false),
                     ApplicationUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Rating = table.Column<short>(type: "smallint", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -334,9 +335,9 @@ namespace Infrastructure.Data.Repository.EfCore.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Feedback_IsLiked",
+                name: "IX_Feedback_Rating",
                 table: "Feedback",
-                column: "IsLiked");
+                column: "Rating");
         }
 
         /// <inheritdoc />

@@ -49,7 +49,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
             var existingFeedback = await _context.Feedbacks.FindAsync(feedback.Id);
             if (existingFeedback != null)
             {
-                existingFeedback.IsLiked = feedback.IsLiked;
+                existingFeedback.Rating = feedback.Rating;
                 existingFeedback.ChatMessageId = feedback.ChatMessageId;
                 existingFeedback.ApplicationUserId = feedback.ApplicationUserId;
             }

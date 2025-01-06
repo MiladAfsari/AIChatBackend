@@ -27,7 +27,7 @@ namespace Service.UnitTest
             {
                 ChatMessageId = Guid.NewGuid(),
                 ApplicationUserId = Guid.NewGuid(),
-                IsLiked = true
+                Rating = 5
             };
             _mediatorMock.Setup(m => m.Send(It.IsAny<AddFeedbackCommand>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(true);
@@ -64,7 +64,7 @@ namespace Service.UnitTest
             {
                 ChatMessageId = Guid.NewGuid(),
                 ApplicationUserId = Guid.NewGuid(),
-                IsLiked = true
+                Rating = 5
             };
             _mediatorMock.Setup(m => m.Send(It.IsAny<AddFeedbackCommand>(), It.IsAny<CancellationToken>()))
                          .ThrowsAsync(new Exception());

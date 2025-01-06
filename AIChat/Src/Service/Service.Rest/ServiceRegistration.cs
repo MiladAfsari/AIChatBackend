@@ -9,7 +9,6 @@ using Domain.Core.Entities.UserTemplateAggregate;
 using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
 using Hangfire;
-using Hangfire.Logging;
 using Hangfire.PostgreSql;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Infrastructure.Data.Repository.EfCore.Repositories;
@@ -93,15 +92,8 @@ namespace Service.Rest
         }
         public static void RegisterHangfireService(this IServiceCollection services, IConfiguration configuration)
         {
-            try
-            {
-                services.AddHangfire(config => config.UsePostgreSqlStorage(configuration["ConnectionStrings:HangfireConnection"]));
-                services.AddHangfireServer();
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            services.AddHangfire(config => config.UsePostgreSqlStorage(configuration["ConnectionStrings:HangfireConnection"]));
+            services.AddHangfireServer();
         }
         public static void RegisterIdentityAuthentication(this IServiceCollection services)
         {

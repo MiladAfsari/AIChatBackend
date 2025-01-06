@@ -1,7 +1,5 @@
-﻿using Application.Command.ChatMessageCommands;
-using Domain.Core.Entities.FeedbackTemplateAggregate;
+﻿using Domain.Core.Entities.FeedbackTemplateAggregate;
 using Domain.Core.UnitOfWorkContracts;
-using Infrastructure.Data.Repository.EfCore.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -11,13 +9,13 @@ namespace Application.Command.FeedbackCommands
     {
         public Guid ChatMessageId { get; private set; }
         public Guid ApplicationUserId { get; private set; }
-        public bool IsLiked { get; private set; }
+        public short Rating { get; private set; }
 
-        public AddFeedbackCommand(Guid chatMessageId, Guid applicationUserId, bool isLiked)
+        public AddFeedbackCommand(Guid chatMessageId, Guid applicationUserId, short rating)
         {
             ChatMessageId = chatMessageId;
             ApplicationUserId = applicationUserId;
-            IsLiked = isLiked;
+            Rating = rating;
         }
     }
 
@@ -43,7 +41,7 @@ namespace Application.Command.FeedbackCommands
                     Id = Guid.NewGuid(),
                     ChatMessageId = request.ChatMessageId,
                     ApplicationUserId = request.ApplicationUserId,
-                    IsLiked = request.IsLiked
+                    Rating = request.Rating
                 };
 
                 await _feedbackRepository.AddAsync(feedback);

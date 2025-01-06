@@ -31,7 +31,7 @@ namespace Service.Rest.V1.Controllers
 
             try
             {
-                var result = await _mediator.Send(new AddFeedbackCommand(request.ChatMessageId, request.ApplicationUserId, request.IsLiked));
+                var result = await _mediator.Send(new AddFeedbackCommand(request.ChatMessageId, request.ApplicationUserId, request.Rating));
 
                 return result ? Ok(result) : StatusCode(500, "Error adding feedback");
             }
