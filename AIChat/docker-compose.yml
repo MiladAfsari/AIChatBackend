@@ -4,9 +4,3 @@ services:
     build:
       context: .
       dockerfile: Src/Service/Service.Rest/Dockerfile
-
-  AIChatdb:
-    image: postgres
-
-volumes:
-  postgres_data:
