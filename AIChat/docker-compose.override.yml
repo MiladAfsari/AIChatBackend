@@ -2,7 +2,5 @@ services:
   service.rest:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_HTTP_PORTS=80
     ports:
-      - "80"
-
+      - "8080"
