@@ -41,6 +41,16 @@ namespace Service.Rest
                 // Configure Serilog
                 builder.ConfigureSerilog();
 
+                // Add CORS policy to allow any origin
+                builder.Services.AddCors(options =>
+                {
+                    options.AddPolicy("AllowAll", new Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder()
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .Build());
+                });
+
                 builder.Services.AddControllers(options =>
                 {
                     options.Filters.Add<TokenValidationFilter>();
@@ -52,12 +62,13 @@ namespace Service.Rest
 
                 //if (app.Environment.IsDevelopment())
                 //{
-                    app.UseSwagger();
-                    app.UseSwaggerUI();
+                app.UseSwagger();
+                app.UseSwaggerUI();
                 //}
 
                 app.UseMiddleware<ExceptionHandlerMiddleware>();
                 app.UseRouting();
+                app.UseCors("AllowAll");
                 app.UseAuthentication();
                 app.UseAuthorization();
                 app.UseEndpoints(cfg => { cfg.MapControllers(); });
