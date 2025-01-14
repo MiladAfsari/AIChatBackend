@@ -42,14 +42,7 @@ namespace Service.Rest
                 builder.ConfigureSerilog();
 
                 // Add CORS policy to allow any origin
-                builder.Services.AddCors(options =>
-                {
-                    options.AddPolicy("AllowAll", new Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder()
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .Build());
-                });
+                builder.Services.AddCorsPolicy();
 
                 builder.Services.AddControllers(options =>
                 {

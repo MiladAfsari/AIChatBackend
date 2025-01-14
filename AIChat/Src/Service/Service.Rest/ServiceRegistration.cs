@@ -157,6 +157,19 @@ namespace Service.Rest
             services.AddScoped<ITokenService, TokenService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
+        public static IServiceCollection AddCorsPolicy(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", new Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder()
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .Build());
+            });
+
+            return services;
+        }
         public static void ConfigureSerilog(this WebApplicationBuilder builder)
         {
             var serviceProvider = builder.Services.BuildServiceProvider();
