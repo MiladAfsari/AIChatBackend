@@ -5,29 +5,38 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
 {
     public class InvalidatedTokenRepository : IInvalidatedTokenRepository
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _dbContext;
 
-        public InvalidatedTokenRepository(ApplicationDbContext context)
+        public InvalidatedTokenRepository(ApplicationDbContext dbContext)
         {
-            _context = context;
+            _dbContext = dbContext;
         }
 
-        public string GetInvalidatedToken(string token)
+        public void InvalidateToken(string token, Guid userId)
         {
-            var invalidatedToken = _context.InvalidatedTokens
-                .FirstOrDefault(t => t.Token == token);
-            return invalidatedToken?.Token;
-        }
-
-        public void InvalidateToken(string token, string username)
-        {
-            var invalidatedToken = new InvalidatedToken
+            if (!IsTokenInvalidated(token))
             {
-                Token = token,
-                InvalidatedAt = DateTime.UtcNow,
-                Username = username
-            };
-            _context.InvalidatedTokens.Add(invalidatedToken);
+                var invalidatedToken = new InvalidatedToken
+                {
+                    Id = Guid.NewGuid(),
+                    ApplicationUserId = userId,
+                    Token = token,
+                    InvalidatedAt = DateTime.UtcNow
+                };
+
+                _dbContext.Set<InvalidatedToken>().Add(invalidatedToken);
+                _dbContext.SaveChanges();
+            }
+        }
+
+        public InvalidatedToken GetInvalidatedToken(string token)
+        {
+            return _dbContext.Set<InvalidatedToken>().FirstOrDefault(t => t.Token == token);
+        }
+
+        public bool IsTokenInvalidated(string token)
+        {
+            return _dbContext.Set<InvalidatedToken>().Any(t => t.Token == token);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Domain.Core.Entities.ChatSessionTemplateAggregate;
+using Domain.Core.Entities.UserTokenTemplateAggregate;
 using Microsoft.AspNetCore.Identity;
 
 namespace Domain.Core.Entities.UserTemplateAggregate
@@ -7,6 +8,7 @@ namespace Domain.Core.Entities.UserTemplateAggregate
     {
         public string FullName { get; set; }
         public short DepartmentId { get; set; }
-        public ICollection<ChatSession> ChatSessions { get; set; } = new List<ChatSession>();
+        public ICollection<ChatSession> ChatSessions { get; set; }
+        public ICollection<UserToken> UserTokens { get; set; } = new List<UserToken>();
     }
 }

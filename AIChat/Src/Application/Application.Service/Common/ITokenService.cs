@@ -5,7 +5,7 @@ namespace Application.Service.Common
     public interface ITokenService
     {
         string GenerateToken(ApplicationUser user);
-        void InvalidateToken(string token, string username);
+        void InvalidateToken(string token, Guid userId);
         bool IsTokenValid(string token);
         string GetTokenFromRequest();
     }

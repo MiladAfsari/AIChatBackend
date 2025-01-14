@@ -1,6 +1,7 @@
 ﻿using Application.Service.Common;
 using Domain.Core.Entities.InvalidatedTokenTemplateAggregate;
 using Domain.Core.Entities.UserTemplateAggregate;
+using Domain.Core.Entities.UserTokenTemplateAggregate;
 using Domain.Core.UnitOfWorkContracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -19,9 +20,10 @@ namespace Infrastructure.Services
         private readonly string _issuer;
         private readonly string _audience;
         private readonly IInvalidatedTokenRepository _invalidatedTokenRepository;
+        private readonly IUserTokenRepository _userTokenRepository;
         private readonly IApplicationDbContextUnitOfWork _unitOfWork;
 
-        public TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IInvalidatedTokenRepository invalidatedTokenRepository, IApplicationDbContextUnitOfWork unitOfWork)
+        public TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor, IInvalidatedTokenRepository invalidatedTokenRepository, IUserTokenRepository userTokenRepository, IApplicationDbContextUnitOfWork unitOfWork)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
@@ -29,6 +31,7 @@ namespace Infrastructure.Services
             _issuer = _configuration["Jwt:Issuer"];
             _audience = _configuration["Jwt:Audience"];
             _invalidatedTokenRepository = invalidatedTokenRepository;
+            _userTokenRepository = userTokenRepository;
             _unitOfWork = unitOfWork;
         }
 
@@ -36,9 +39,9 @@ namespace Infrastructure.Services
         {
             var claims = new[]
             {
-                    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-                };
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
             var creds = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
 
@@ -53,13 +56,27 @@ namespace Infrastructure.Services
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
 
-            return tokenHandler.WriteToken(token);
+            // Store the token in the database
+            var userToken = new UserToken
+            {
+                Id = Guid.NewGuid(),
+                ApplicationUserId = user.Id,
+                Token = tokenString,
+                IssuedAt = DateTime.UtcNow,
+                ExpiresAt = tokenDescriptor.Expires.Value
+            };
+
+            _userTokenRepository.AddTokenAsync(userToken);
+            _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
+
+            return tokenString;
         }
 
-        public void InvalidateToken(string token, string username)
+        public void InvalidateToken(string token, Guid userId)
         {
-            _invalidatedTokenRepository.InvalidateToken(token, username);
+            _invalidatedTokenRepository.InvalidateToken(token, userId);
             _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
         }
 

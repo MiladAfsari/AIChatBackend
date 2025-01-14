@@ -8,11 +8,11 @@ namespace Application.Command.UserCommands
 {
     public class LogOutCommand : IRequest<LogOutViewModel>
     {
-        public string UserName { get; }
+        public Guid UserId { get; }
 
-        public LogOutCommand(string userName)
+        public LogOutCommand(Guid userId)
         {
-            UserName = userName ?? throw new ArgumentNullException(nameof(userName));
+            UserId = userId != Guid.Empty ? userId : throw new ArgumentNullException(nameof(userId));
         }
     }
 
@@ -38,10 +38,10 @@ namespace Application.Command.UserCommands
 
             try
             {
-                var user = await _userRepository.GetUserByUserNameAsync(request.UserName);
+                var user = await _userRepository.GetUserByIdAsync(request.UserId.ToString());
                 if (user == null)
                 {
-                    _logger.LogWarning("Logout attempt for non-existent user: {UserName}", request.UserName);
+                    _logger.LogWarning("Logout attempt for non-existent user: {UserId}", request.UserId);
                     return new LogOutViewModel
                     {
                         Success = false,
@@ -52,7 +52,7 @@ namespace Application.Command.UserCommands
                 var token = _tokenService.GetTokenFromRequest();
                 if (!string.IsNullOrEmpty(token))
                 {
-                    _tokenService.InvalidateToken(token, request.UserName);
+                    _tokenService.InvalidateToken(token, request.UserId);
                 }
 
                 return new LogOutViewModel
@@ -62,7 +62,7 @@ namespace Application.Command.UserCommands
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred during logout for user: {UserName}", request.UserName);
+                _logger.LogError(ex, "Error occurred during logout for user: {UserId}", request.UserId);
                 return new LogOutViewModel
                 {
                     Success = false,

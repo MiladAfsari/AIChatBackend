@@ -137,14 +137,14 @@ namespace Service.Rest.V1.Controllers
         [SwaggerOperation("User logout")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
         [SwaggerResponse((int)HttpStatusCode.OK, "Logout successful", typeof(LogOutViewModel))]
-        public async Task<ActionResult<LogOutViewModel>> Logout([FromQuery] string userName)
+        public async Task<ActionResult<LogOutViewModel>> Logout([FromQuery] Guid userId)
         {
-            if (string.IsNullOrEmpty(userName))
+            if (userId == Guid.Empty)
             {
                 return BadRequest("User is not authenticated.");
             }
 
-            var result = await _mediator.Send(new LogOutCommand(userName));
+            var result = await _mediator.Send(new LogOutCommand(userId));
 
             return result.Success ? Ok(result) : BadRequest(result.ErrorMessage);
         }

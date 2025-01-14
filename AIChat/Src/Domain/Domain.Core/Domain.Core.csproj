@@ -11,6 +11,7 @@
     <Folder Include="Entities\ChatSessionTemplateAggregate\Exceptions\" />
     <Folder Include="Entities\FeedbackTemplateAggregate\Exceptions\" />
     <Folder Include="Entities\InvalidatedTokenTemplateAggregate\Exceptions\" />
+    <Folder Include="Entities\UserTokenTemplateAggregate\Exceptions\" />
   </ItemGroup>
 
   <ItemGroup>

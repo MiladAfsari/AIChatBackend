@@ -186,12 +186,12 @@ namespace Service.UnitTest
         public async Task Logout_ReturnsOkResult_WhenLogoutIsSuccessful()
         {
             // Arrange
-            var userName = "testuser";
+            var userId = Guid.NewGuid();
             var logoutResult = new LogOutViewModel { Success = true };
             _mediatorMock.Setup(m => m.Send(It.IsAny<LogOutCommand>(), default)).ReturnsAsync(logoutResult);
 
             // Act
-            var result = await _controller.Logout(userName);
+            var result = await _controller.Logout(userId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
@@ -202,12 +202,12 @@ namespace Service.UnitTest
         public async Task Logout_ReturnsBadRequest_WhenLogoutFails()
         {
             // Arrange
-            var userName = "testuser";
+            var userId = Guid.NewGuid();
             var logoutResult = new LogOutViewModel { Success = false, ErrorMessage = "Logout failed" };
             _mediatorMock.Setup(m => m.Send(It.IsAny<LogOutCommand>(), default)).ReturnsAsync(logoutResult);
 
             // Act
-            var result = await _controller.Logout(userName);
+            var result = await _controller.Logout(userId);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);

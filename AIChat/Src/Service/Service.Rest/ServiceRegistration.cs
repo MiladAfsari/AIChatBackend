@@ -6,6 +6,7 @@ using Domain.Core.Entities.ChatSessionTemplateAggregate;
 using Domain.Core.Entities.FeedbackTemplateAggregate;
 using Domain.Core.Entities.InvalidatedTokenTemplateAggregate;
 using Domain.Core.Entities.UserTemplateAggregate;
+using Domain.Core.Entities.UserTokenTemplateAggregate;
 using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
 using Hangfire;
@@ -39,6 +40,7 @@ namespace Service.Rest
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
             services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
             services.AddScoped<IInvalidatedTokenRepository, InvalidatedTokenRepository>();
+            services.AddScoped<IUserTokenRepository, UserTokenRepository>();
         }
         public static void RegisterUnitOfWorks(this IServiceCollection services)
         {
