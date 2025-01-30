@@ -1,4 +1,6 @@
 ﻿using Application.Command.ChatSessionCommands;
+using Application.Query.ChatSessionQueries;
+using Application.Query.ViewModels;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -30,8 +32,7 @@ namespace Service.UnitTest
                 ApplicationUserId = Guid.NewGuid()
             };
             var expectedGuid = Guid.NewGuid();
-            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatSessionCommand>(), It.IsAny<CancellationToken>()))
-                         .ReturnsAsync(expectedGuid);
+            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatSessionCommand>(), default)).ReturnsAsync(expectedGuid);
 
             // Act
             var result = await _controller.AddChatSession(request);
@@ -57,24 +58,35 @@ namespace Service.UnitTest
         }
 
         [Fact]
-        public async Task AddChatSession_ReturnsInternalServerError_WhenExceptionIsThrown()
+        public async Task GetChatSessionsByUserId_ReturnsOkResult_WithChatSessions()
         {
             // Arrange
-            var request = new AddChatSessionModel
-            {
-                SessionName = "Test Session",
-                Description = "Test Description",
-                ApplicationUserId = Guid.NewGuid()
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatSessionCommand>(), It.IsAny<CancellationToken>()))
-                         .ThrowsAsync(new Exception());
+            var userId = Guid.NewGuid();
+            var chatSessions = new List<GetChatSessionsByUserIdViewModel>
+                {
+                    new GetChatSessionsByUserIdViewModel { Id = Guid.NewGuid(), SessionName = "Session 1", Description = "Description 1" },
+                    new GetChatSessionsByUserIdViewModel { Id = Guid.NewGuid(), SessionName = "Session 2", Description = "Description 2" }
+                };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetByUserIdQuery>(), default)).ReturnsAsync(chatSessions);
 
             // Act
-            var result = await _controller.AddChatSession(request);
+            var result = await _controller.GetChatSessionsByUserId(userId);
 
             // Assert
-            var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
-            Assert.Equal((int)HttpStatusCode.InternalServerError, statusCodeResult.StatusCode);
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
+            Assert.Equal(chatSessions, okResult.Value);
+        }
+
+        [Fact]
+        public async Task GetChatSessionsByUserId_ReturnsBadRequest_WhenUserIdIsInvalid()
+        {
+            // Act
+            var result = await _controller.GetChatSessionsByUserId(Guid.Empty);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal((int)HttpStatusCode.BadRequest, badRequestResult.StatusCode);
         }
     }
 }

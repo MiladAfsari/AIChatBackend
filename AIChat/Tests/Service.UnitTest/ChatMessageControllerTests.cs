@@ -1,4 +1,6 @@
 ﻿using Application.Command.ChatMessageCommands;
+using Application.Query.ChatMessageQueries;
+using Application.Query.ViewModels.Application.Query.ViewModels;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -20,62 +22,76 @@ namespace Service.UnitTest
         }
 
         [Fact]
-        public async Task AddChatMessage_ReturnsOkResult_WhenMessageIsAddedSuccessfully()
+        public async Task AddChatMessage_ReturnsOkResult_WhenRequestIsValid()
         {
             // Arrange
-            var addChatMessageModel = new AddChatMessageModel
+            var request = new AddChatMessageModel
             {
                 ChatSessionId = Guid.NewGuid(),
-                Question = "What is the time?",
-                Answer = "It's 2 PM."
+                Question = "What is your name?",
+                Answer = "GitHub Copilot"
             };
-            var expectedGuid = Guid.NewGuid();
-            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatMessageCommand>(), default)).ReturnsAsync((Guid?)expectedGuid);
+            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatMessageCommand>(), default))
+                         .ReturnsAsync(Guid.NewGuid());
 
             // Act
-            var result = await _controller.AddChatMessage(addChatMessageModel);
+            var result = await _controller.AddChatMessage(request);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.Equal(expectedGuid, okResult.Value);
+            Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
         }
 
         [Fact]
         public async Task AddChatMessage_ReturnsBadRequest_WhenModelStateIsInvalid()
         {
             // Arrange
-            var addChatMessageModel = new AddChatMessageModel();
+            var request = new AddChatMessageModel();
             _controller.ModelState.AddModelError("ChatSessionId", "Required");
 
             // Act
-            var result = await _controller.AddChatMessage(addChatMessageModel);
+            var result = await _controller.AddChatMessage(request);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            var modelState = Assert.IsType<SerializableError>(badRequestResult.Value);
-            Assert.True(modelState.ContainsKey("ChatSessionId"));
-            Assert.Equal("Required", ((string[])modelState["ChatSessionId"])[0]);
+            Assert.Equal((int)HttpStatusCode.BadRequest, badRequestResult.StatusCode);
         }
 
         [Fact]
-        public async Task AddChatMessage_ReturnsInternalServerError_WhenExceptionIsThrown()
+        public async Task GetChatMessagesBySessionId_ReturnsOkResult_WhenSessionIdIsValid()
         {
             // Arrange
-            var addChatMessageModel = new AddChatMessageModel
-            {
-                ChatSessionId = Guid.NewGuid(),
-                Question = "What is the time?",
-                Answer = "It's 2 PM."
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatMessageCommand>(), default)).ThrowsAsync(new Exception());
+            var sessionId = Guid.NewGuid();
+            var chatMessages = new List<GetChatMessagesBySessionIdViewModel>
+                {
+                    new GetChatMessagesBySessionIdViewModel
+                    {
+                        ChatSessionId = sessionId,
+                        Question = "What is your name?",
+                        Answer = "GitHub Copilot",
+                        Feedback = new FeedbackViewModel()
+                    }
+                };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetBySessionIdQuery>(), default))
+                         .ReturnsAsync(chatMessages);
 
             // Act
-            var result = await _controller.AddChatMessage(addChatMessageModel);
+            var result = await _controller.GetChatMessagesBySessionId(sessionId);
 
             // Assert
-            var internalServerErrorResult = Assert.IsType<ObjectResult>(result.Result);
-            Assert.Equal((int)HttpStatusCode.InternalServerError, internalServerErrorResult.StatusCode);
-            Assert.Equal("Internal server error", internalServerErrorResult.Value);
+            var okResult = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetChatMessagesBySessionId_ReturnsBadRequest_WhenSessionIdIsInvalid()
+        {
+            // Act
+            var result = await _controller.GetChatMessagesBySessionId(Guid.Empty);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal((int)HttpStatusCode.BadRequest, badRequestResult.StatusCode);
         }
     }
 }

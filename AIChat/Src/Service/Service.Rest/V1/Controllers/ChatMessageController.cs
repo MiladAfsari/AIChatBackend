@@ -1,4 +1,6 @@
 ﻿using Application.Command.ChatMessageCommands;
+using Application.Query.ChatMessageQueries;
+using Application.Query.ViewModels.Application.Query.ViewModels;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,6 +36,28 @@ namespace Service.Rest.V1.Controllers
                 var result = await _mediator.Send(new AddChatMessageCommand(request.ChatSessionId, request.Question, request.Answer));
 
                 return result.HasValue ? Ok(result) : StatusCode(500, "Error adding chat message");
+            }
+            catch (Exception)
+            {
+                // Log the exception (consider using a logging framework)
+                return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpGet("GetChatMessagesBySessionId/{sessionId}")]
+        [SwaggerOperation("Get chat messages by session ID")]
+        [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
+        [SwaggerResponse((int)HttpStatusCode.OK, "Chat messages retrieved successfully", typeof(IEnumerable<GetChatMessagesBySessionIdViewModel>))]
+        [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
+        public async Task<ActionResult<IEnumerable<GetChatMessagesBySessionIdViewModel>>> GetChatMessagesBySessionId(Guid sessionId)
+        {
+            if (sessionId == Guid.Empty) return BadRequest("Invalid session ID");
+
+            try
+            {
+                var result = await _mediator.Send(new GetBySessionIdQuery(sessionId));
+
+                return Ok(result);
             }
             catch (Exception)
             {

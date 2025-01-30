@@ -23,13 +23,6 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
             return await _context.ChatMessages.ToListAsync();
         }
 
-        public async Task<IEnumerable<ChatMessage>> GetBySessionIdAsync(Guid sessionId)
-        {
-            return await _context.ChatMessages
-                .Where(message => message.ChatSessionId == sessionId)
-                .ToListAsync();
-        }
-
         // Get all chat messages for a specific user
         public async Task<IEnumerable<ChatMessage>> GetAllChatsByUserIdAsync(Guid userId)
         {
@@ -39,10 +32,11 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         }
 
         // Get all chat messages by specific sessionId
-        public async Task<IEnumerable<ChatMessage>> GetChatsBySessionIdAsync(Guid sessionId)
+        public async Task<IEnumerable<ChatMessage>> GetChatsWithFeedbackBySessionIdAsync(Guid sessionId)
         {
             return await _context.ChatMessages
                 .Where(message => message.ChatSessionId == sessionId)
+                .Include(message => message.Feedback)
                 .ToListAsync();
         }
 
