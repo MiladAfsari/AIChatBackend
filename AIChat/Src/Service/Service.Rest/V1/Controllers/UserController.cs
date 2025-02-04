@@ -7,6 +7,7 @@ using Infrastructure.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service.Rest.Attributes.LogException;
 using Service.Rest.V1.RequestModels;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
@@ -15,6 +16,7 @@ namespace Service.Rest.V1.Controllers
 {
     [ApiController]
     [Route("api/users")]
+    [LogException]
     public class UserController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -51,16 +53,8 @@ namespace Service.Rest.V1.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
-            {
-                var result = await _mediator.Send(new CreateUserCommand(request.UserName, request.Password, request.Role, request.FullName, request.DepartmentId));
-                return result ? Ok(true) : BadRequest("User creation failed.");
-            }
-            catch (Exception)
-            {
-                // Log the exception (consider using a logging framework)
-                return StatusCode(500, "Internal server error");
-            }
+            var result = await _mediator.Send(new CreateUserCommand(request.UserName, request.Password, request.Role, request.FullName, request.DepartmentId));
+            return result ? Ok(true) : BadRequest("User creation failed.");
         }
 
         [HttpGet]
@@ -91,19 +85,12 @@ namespace Service.Rest.V1.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
-            {
-                var result = await _mediator.Send(new ChangePasswordCommand(request.UserName, request.OldPassword, request.NewPassword));
-                return result ? Ok(true) : Unauthorized("Invalid old password.");
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal server error");
-            }
+            var result = await _mediator.Send(new ChangePasswordCommand(request.UserName, request.OldPassword, request.NewPassword));
+            return result ? Ok(true) : Unauthorized("Invalid old password.");
         }
 
         [HttpPost("ImportUsers")]
-        //[Authorize]
+        [Authorize]
         [SwaggerOperation(
            Summary = "Import users from file",
            Description = "Uploads an Excel file to import users",

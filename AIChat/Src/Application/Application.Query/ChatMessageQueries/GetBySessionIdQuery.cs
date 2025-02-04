@@ -28,28 +28,20 @@ namespace Application.Query.ChatMessageQueries
 
         public async Task<IEnumerable<GetChatMessagesBySessionIdViewModel>> Handle(GetBySessionIdQuery request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var chatMessages = await _chatMessageRepository.GetChatsWithFeedbackBySessionIdAsync(request.SessionId);
+            var chatMessages = await _chatMessageRepository.GetChatsWithFeedbackBySessionIdAsync(request.SessionId);
 
-                return chatMessages.Select(cm => new GetChatMessagesBySessionIdViewModel
-                {
-                    ChatSessionId = cm.ChatSessionId,
-                    Question = cm.Question,
-                    Answer = cm.Answer,
-                    Feedback = cm.Feedback != null ? new FeedbackViewModel
-                    {
-                        ChatMessageId = cm.Feedback.ChatMessageId,
-                        ApplicationUserId = cm.Feedback.ApplicationUserId,
-                        Rating = cm.Feedback.Rating
-                    } : null
-                });
-            }
-            catch (Exception ex)
+            return chatMessages.Select(cm => new GetChatMessagesBySessionIdViewModel
             {
-                _logger.LogError(ex, "Error retrieving chat messages for session {SessionId}", request.SessionId);
-                return Enumerable.Empty<GetChatMessagesBySessionIdViewModel>();
-            }
+                ChatSessionId = cm.ChatSessionId,
+                Question = cm.Question,
+                Answer = cm.Answer,
+                Feedback = cm.Feedback != null ? new FeedbackViewModel
+                {
+                    ChatMessageId = cm.Feedback.ChatMessageId,
+                    ApplicationUserId = cm.Feedback.ApplicationUserId,
+                    Rating = cm.Feedback.Rating
+                } : null
+            });
         }
     }
 }

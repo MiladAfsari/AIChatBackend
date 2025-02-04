@@ -36,39 +36,27 @@ namespace Application.Command.UserCommands
                 throw new ArgumentNullException(nameof(request));
             }
 
-            try
+            var user = await _userRepository.GetUserByIdAsync(request.UserId.ToString());
+            if (user == null)
             {
-                var user = await _userRepository.GetUserByIdAsync(request.UserId.ToString());
-                if (user == null)
-                {
-                    _logger.LogWarning("Logout attempt for non-existent user: {UserId}", request.UserId);
-                    return new LogOutViewModel
-                    {
-                        Success = false,
-                        ErrorMessage = "User not found."
-                    };
-                }
-
-                var token = _tokenService.GetTokenFromRequest();
-                if (!string.IsNullOrEmpty(token))
-                {
-                    _tokenService.InvalidateToken(token, request.UserId);
-                }
-
-                return new LogOutViewModel
-                {
-                    Success = true
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred during logout for user: {UserId}", request.UserId);
+                _logger.LogWarning("Logout attempt for non-existent user: {UserId}", request.UserId);
                 return new LogOutViewModel
                 {
                     Success = false,
-                    ErrorMessage = "An error occurred while processing your request."
+                    ErrorMessage = "User not found."
                 };
             }
+
+            var token = _tokenService.GetTokenFromRequest();
+            if (!string.IsNullOrEmpty(token))
+            {
+                _tokenService.InvalidateToken(token, request.UserId);
+            }
+
+            return new LogOutViewModel
+            {
+                Success = true
+            };
         }
     }
 }

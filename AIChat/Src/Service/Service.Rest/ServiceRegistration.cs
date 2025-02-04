@@ -7,6 +7,7 @@ using Domain.Core.Entities.FeedbackTemplateAggregate;
 using Domain.Core.Entities.InvalidatedTokenTemplateAggregate;
 using Domain.Core.Entities.UserTemplateAggregate;
 using Domain.Core.Entities.UserTokenTemplateAggregate;
+using Domain.Core.Error;
 using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
 using Hangfire;
@@ -41,6 +42,7 @@ namespace Service.Rest
             services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
             services.AddScoped<IInvalidatedTokenRepository, InvalidatedTokenRepository>();
             services.AddScoped<IUserTokenRepository, UserTokenRepository>();
+            services.AddScoped<IErrorLogRepository, ErrorLogRepository>();
         }
         public static void RegisterUnitOfWorks(this IServiceCollection services)
         {

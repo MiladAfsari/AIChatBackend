@@ -29,17 +29,9 @@ namespace Service.Rest.V1.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
-            {
-                var result = await _mediator.Send(new AddFeedbackCommand(request.ChatMessageId, request.ApplicationUserId, request.Rating));
+            var result = await _mediator.Send(new AddFeedbackCommand(request.ChatMessageId, request.ApplicationUserId, request.Rating));
 
-                return result ? Ok(result) : StatusCode(500, "Error adding feedback");
-            }
-            catch (Exception)
-            {
-                // Log the exception (consider using a logging framework)
-                return StatusCode(500, "Internal server error");
-            }
+            return result ? Ok(result) : StatusCode(500, "Error adding feedback");
         }
     }
 }

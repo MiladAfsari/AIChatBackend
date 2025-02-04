@@ -31,17 +31,9 @@ namespace Service.Rest.V1.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
-            {
-                var result = await _mediator.Send(new AddChatSessionCommand(request.SessionName, request.Description, request.ApplicationUserId));
+            var result = await _mediator.Send(new AddChatSessionCommand(request.SessionName, request.Description, request.ApplicationUserId));
 
-                return result == Guid.Empty ? StatusCode(500, "Error adding chat session") : Ok(result);
-            }
-            catch (Exception ex)
-            {
-                // Log the exception (consider using a logging framework)
-                return StatusCode(500, "Internal server error");
-            }
+            return result == Guid.Empty ? StatusCode(500, "Error adding chat session") : Ok(result);
         }
 
         [HttpGet("GetChatSessionsByUserId/{userId}")]
@@ -53,17 +45,9 @@ namespace Service.Rest.V1.Controllers
         {
             if (userId == Guid.Empty) return BadRequest("Invalid user ID");
 
-            try
-            {
-                var result = await _mediator.Send(new GetByUserIdQuery(userId));
+            var result = await _mediator.Send(new GetByUserIdQuery(userId));
 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                // Log the exception (consider using a logging framework)
-                return StatusCode(500, "Internal server error");
-            }
+            return Ok(result);
         }
     }
 }

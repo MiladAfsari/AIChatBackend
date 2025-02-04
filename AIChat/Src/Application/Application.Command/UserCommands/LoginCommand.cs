@@ -40,38 +40,26 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginViewModel>
             throw new ArgumentNullException(nameof(request));
         }
 
-        try
+        // Validate user credentials
+        var user = await _userRepository.GetUserByUserNameAsync(request.UserName);
+        if (user == null || !VerifyPassword(user, request.Password))
         {
-            // Validate user credentials
-            var user = await _userRepository.GetUserByUserNameAsync(request.UserName);
-            if (user == null || !VerifyPassword(user, request.Password))
-            {
-                _logger.LogWarning("Invalid login attempt for user: {UserName}", request.UserName);
-                return new LoginViewModel
-                {
-                    Success = false,
-                    ErrorMessage = "Invalid username or password."
-                };
-            }
-
-            // Generate token
-            var token = _tokenService.GenerateToken(user);
-
-            return new LoginViewModel
-            {
-                Success = true,
-                Token = token
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred during login for user: {UserName}", request.UserName);
+            _logger.LogWarning("Invalid login attempt for user: {UserName}", request.UserName);
             return new LoginViewModel
             {
                 Success = false,
-                ErrorMessage = "An error occurred while processing your request."
+                ErrorMessage = "Invalid username or password."
             };
         }
+
+        // Generate token
+        var token = _tokenService.GenerateToken(user);
+
+        return new LoginViewModel
+        {
+            Success = true,
+            Token = token
+        };
     }
 
     private bool VerifyPassword(ApplicationUser user, string password)

@@ -37,29 +37,21 @@ namespace Application.Command.UserCommands
 
         public async Task<bool> Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            try
+            var user = new ApplicationUser
             {
-                var user = new ApplicationUser
-                {
-                    UserName = request.UserName,
-                    //Email = $"{request.UserName}@example.com", // Uncomment if needed
-                    FullName = request.FullName,
-                    DepartmentId = request.DepartmentId
-                };
+                UserName = request.UserName,
+                //Email = $"{request.UserName}@example.com", // Uncomment if needed
+                FullName = request.FullName,
+                DepartmentId = request.DepartmentId
+            };
 
-                var result = await _userRepository.AddUserWithRoleAsync(user, request.Password, request.Role);
-                if (result)
-                {
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
-                    return true;
-                }
-                return false;
-            }
-            catch (Exception ex)
+            var result = await _userRepository.AddUserWithRoleAsync(user, request.Password, request.Role);
+            if (result)
             {
-                _logger.LogError(ex, "Error creating user");
-                return false;
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                return true;
             }
+            return false;
         }
     }
 }

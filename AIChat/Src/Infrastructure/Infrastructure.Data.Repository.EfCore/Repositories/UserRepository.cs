@@ -19,67 +19,57 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
             _roleManager = roleManager;
         }
 
-
         // Bulk import users with roles from Excel data
         public async Task<bool> AddUsersFromExcelAsync(string filePath)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             var usersData = new List<(string UserName, string Password, string Role, string FullName)>();
 
-            try
+            using (var package = new ExcelPackage(new FileInfo(filePath)))
             {
-                using (var package = new ExcelPackage(new FileInfo(filePath)))
+                var worksheet = package.Workbook.Worksheets[0];
+                var rowCount = worksheet.Dimension.Rows;
+
+                for (int row = 2; row <= rowCount; row++)
                 {
-                    var worksheet = package.Workbook.Worksheets[0];
-                    var rowCount = worksheet.Dimension.Rows;
+                    var userName = worksheet.Cells[row, 1].Text;
+                    var password = worksheet.Cells[row, 2].Text;
+                    var role = string.IsNullOrWhiteSpace(worksheet.Cells[row, 3].Text) ? "Staff" : worksheet.Cells[row, 3].Text;
+                    var fullName = worksheet.Cells[row, 4].Text;
 
-                    for (int row = 2; row <= rowCount; row++)
+                    // Validate data
+                    if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(role))
                     {
-                        var userName = worksheet.Cells[row, 1].Text;
-                        var password = worksheet.Cells[row, 2].Text;
-                        var role = string.IsNullOrWhiteSpace(worksheet.Cells[row, 3].Text) ? "Staff" : worksheet.Cells[row, 3].Text;
-                        var fullName = worksheet.Cells[row, 4].Text;
-
-                        // Validate data
-                        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(role))
-                        {
-                            _logger.LogWarning("Invalid data at row {RowNumber}: {UserName}, {Password}, {Role}", row, userName, password, role);
-                            continue;
-                        }
-                        var existingUser = await _userManager.FindByNameAsync(userName);
-                        if (existingUser != null)
-                        {
-                            _logger.LogWarning("User {UserName} already exists and will not be added again.", userName);
-                            continue;
-                        }
-                        usersData.Add((userName, password, role, fullName));
+                        _logger.LogWarning("Invalid data at row {RowNumber}: {UserName}, {Password}, {Role}", row, userName, password, role);
+                        continue;
                     }
-                }
-
-                foreach (var userData in usersData)
-                {
-                    var user = new ApplicationUser
+                    var existingUser = await _userManager.FindByNameAsync(userName);
+                    if (existingUser != null)
                     {
-                        UserName = userData.UserName,
-                        FullName = userData.FullName
-                    };
-
-                    var result = await AddUserWithRoleAsync(user, userData.Password, userData.Role);
-                    if (!result)
-                    {
-                        _logger.LogError("Failed to add user {UserName} with role {Role}", userData.UserName, userData.Role);
+                        _logger.LogWarning("User {UserName} already exists and will not be added again.", userName);
+                        continue;
                     }
+                    usersData.Add((userName, password, role, fullName));
                 }
-
-                return true;
             }
-            catch (Exception ex)
+
+            foreach (var userData in usersData)
             {
-                _logger.LogError(ex, "An error occurred while importing users from Excel file {FilePath}", filePath);
-                return false;
+                var user = new ApplicationUser
+                {
+                    UserName = userData.UserName,
+                    FullName = userData.FullName
+                };
+
+                var result = await AddUserWithRoleAsync(user, userData.Password, userData.Role);
+                if (!result)
+                {
+                    _logger.LogError("Failed to add user {UserName} with role {Role}", userData.UserName, userData.Role);
+                }
             }
+
+            return true;
         }
-
 
         // Get a user by username
         public async Task<ApplicationUser> GetUserByUserNameAsync(string userName)
@@ -91,49 +81,41 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         // Add a single user with a role
         public async Task<bool> AddUserWithRoleAsync(ApplicationUser user, string password, string role)
         {
-            try
+            var createResult = await _userManager.CreateAsync(user, password);
+            if (!createResult.Succeeded)
             {
-                var createResult = await _userManager.CreateAsync(user, password);
-                if (!createResult.Succeeded)
-                {
-                    _logger.LogError("Failed to create user {UserName}", user.UserName);
-                    return false;
-                }
-
-                if (string.IsNullOrEmpty(role))
-                {
-                    _logger.LogError("Role is null or empty for user {UserName}", user.UserName);
-                    await _userManager.DeleteAsync(user); // Rollback user creation if role is null or empty
-                    return false;
-                }
-
-                var roleExists = await _roleManager.RoleExistsAsync(role);
-                if (!roleExists)
-                {
-                    var roleResult = await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = role });
-                    if (!roleResult.Succeeded)
-                    {
-                        _logger.LogError("Failed to create role {Role}", role);
-                        await _userManager.DeleteAsync(user); // Rollback user creation if role creation fails
-                        return false;
-                    }
-                }
-
-                var addToRoleResult = await _userManager.AddToRoleAsync(user, role);
-                if (!addToRoleResult.Succeeded)
-                {
-                    _logger.LogError("Failed to add role {Role} to user {UserName}", role, user.UserName);
-                    await _userManager.DeleteAsync(user); // Rollback user creation if role assignment fails
-                    return false;
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while adding user {UserName} with role {Role}", user.UserName, role);
+                _logger.LogError("Failed to create user {UserName}", user.UserName);
                 return false;
             }
+
+            if (string.IsNullOrEmpty(role))
+            {
+                _logger.LogError("Role is null or empty for user {UserName}", user.UserName);
+                await _userManager.DeleteAsync(user); // Rollback user creation if role is null or empty
+                return false;
+            }
+
+            var roleExists = await _roleManager.RoleExistsAsync(role);
+            if (!roleExists)
+            {
+                var roleResult = await _roleManager.CreateAsync(new IdentityRole<Guid> { Name = role });
+                if (!roleResult.Succeeded)
+                {
+                    _logger.LogError("Failed to create role {Role}", role);
+                    await _userManager.DeleteAsync(user); // Rollback user creation if role creation fails
+                    return false;
+                }
+            }
+
+            var addToRoleResult = await _userManager.AddToRoleAsync(user, role);
+            if (!addToRoleResult.Succeeded)
+            {
+                _logger.LogError("Failed to add role {Role} to user {UserName}", role, user.UserName);
+                await _userManager.DeleteAsync(user); // Rollback user creation if role assignment fails
+                return false;
+            }
+
+            return true;
         }
 
         // Authenticate user with credentials

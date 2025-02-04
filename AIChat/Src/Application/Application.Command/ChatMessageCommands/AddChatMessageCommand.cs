@@ -34,24 +34,16 @@ namespace Application.Command.ChatMessageCommands
 
         public async Task<Guid?> Handle(AddChatMessageCommand request, CancellationToken cancellationToken)
         {
-            try
+            var chatMessage = new ChatMessage
             {
-                var chatMessage = new ChatMessage
-                {
-                    ChatSessionId = request.ChatSessionId,
-                    Question = request.Question,
-                    Answer = request.Answer
-                };
+                ChatSessionId = request.ChatSessionId,
+                Question = request.Question,
+                Answer = request.Answer
+            };
 
-                await _chatMessageRepository.AddAsync(chatMessage);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                return chatMessage.Id;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding chat message");
-                return null;
-            }
+            await _chatMessageRepository.AddAsync(chatMessage);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return chatMessage.Id;
         }
     }
 }

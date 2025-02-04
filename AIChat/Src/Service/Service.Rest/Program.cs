@@ -1,8 +1,5 @@
-using Autofac.Core;
-using Hangfire;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
 using Serilog;
 
 namespace Service.Rest
@@ -59,7 +56,7 @@ namespace Service.Rest
                 app.UseSwaggerUI();
                 //}
 
-                app.UseMiddleware<ExceptionHandlerMiddleware>();
+                //app.UseMiddleware<ExceptionHandlerMiddleware>();
                 app.UseRouting();
                 app.UseCors("AllowAll");
                 app.UseAuthentication();

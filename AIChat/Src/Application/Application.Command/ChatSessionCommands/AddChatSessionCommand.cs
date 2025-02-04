@@ -34,24 +34,16 @@ namespace Application.Command.ChatSessionCommands
 
         public async Task<Guid> Handle(AddChatSessionCommand request, CancellationToken cancellationToken)
         {
-            try
+            var chatSession = new ChatSession
             {
-                var chatSession = new ChatSession
-                {
-                    SessionName = request.SessionName,
-                    Description = request.Description,
-                    ApplicationUserId = request.ApplicationUserId
-                };
+                SessionName = request.SessionName,
+                Description = request.Description,
+                ApplicationUserId = request.ApplicationUserId
+            };
 
-                var result = await _chatSessionRepository.AddAsync(chatSession);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding chat session");
-                return Guid.Empty;
-            }
+            var result = await _chatSessionRepository.AddAsync(chatSession);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            return result;
         }
     }
 }

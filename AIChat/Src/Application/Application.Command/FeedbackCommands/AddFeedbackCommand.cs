@@ -34,27 +34,19 @@ namespace Application.Command.FeedbackCommands
 
         public async Task<bool> Handle(AddFeedbackCommand request, CancellationToken cancellationToken)
         {
-            try
+            var feedback = new Feedback
             {
-                var feedback = new Feedback
-                {
-                    Id = Guid.NewGuid(),
-                    ChatMessageId = request.ChatMessageId,
-                    ApplicationUserId = request.ApplicationUserId,
-                    Rating = request.Rating
-                };
+                Id = Guid.NewGuid(),
+                ChatMessageId = request.ChatMessageId,
+                ApplicationUserId = request.ApplicationUserId,
+                Rating = request.Rating
+            };
 
-                await _feedbackRepository.AddAsync(feedback);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _feedbackRepository.AddAsync(feedback);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation("Feedback added successfully for ChatMessageId: {ChatMessageId}", request.ChatMessageId);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while adding feedback for ChatMessageId: {ChatMessageId}", request.ChatMessageId);
-                return false;
-            }
+            _logger.LogInformation("Feedback added successfully for ChatMessageId: {ChatMessageId}", request.ChatMessageId);
+            return true;
         }
     }
 }
