@@ -1,8 +1,11 @@
-﻿namespace Domain.Core.Error
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Domain.Core.Error
 {
     public class ErrorLog
     {
-        public int Id { get; set; }
+        [Key]
+        public long Id { get; set; }
         public string? UserName { get; set; }
         public string? Page { get; set; }
         public string? Block { get; set; }

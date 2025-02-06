@@ -16,7 +16,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         {
             if (errorLog == null) throw new ArgumentNullException(nameof(errorLog));
 
-            await _dbContext.ErrorLogs.AddAsync(errorLog);
+            await _dbContext.ErrorLogs.AddAsync(errorLog, cancellationToken);
         }
     }
 }

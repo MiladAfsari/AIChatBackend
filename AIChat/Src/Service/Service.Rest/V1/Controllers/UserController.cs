@@ -8,6 +8,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Rest.Attributes.LogException;
+using Service.Rest.Attributes.LogRequestResponse;
 using Service.Rest.V1.RequestModels;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
@@ -44,6 +45,7 @@ namespace Service.Rest.V1.Controllers
         }
 
         [AllowAnonymous]
+        [LogRequestResponse]
         [HttpPost("CreateUser")]
         [SwaggerOperation("Create a new user")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]

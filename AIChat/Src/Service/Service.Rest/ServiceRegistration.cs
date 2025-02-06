@@ -1,6 +1,7 @@
 ﻿using Application.Command.Base;
 using Application.Query.Base;
 using Application.Service.Common;
+using Domain.Core.ApiLog;
 using Domain.Core.Entities.ChatMessageTemplateAggregate;
 using Domain.Core.Entities.ChatSessionTemplateAggregate;
 using Domain.Core.Entities.FeedbackTemplateAggregate;
@@ -43,6 +44,7 @@ namespace Service.Rest
             services.AddScoped<IInvalidatedTokenRepository, InvalidatedTokenRepository>();
             services.AddScoped<IUserTokenRepository, UserTokenRepository>();
             services.AddScoped<IErrorLogRepository, ErrorLogRepository>();
+            services.AddScoped<IApiLogRepository, ApiLogRepository>();
         }
         public static void RegisterUnitOfWorks(this IServiceCollection services)
         {

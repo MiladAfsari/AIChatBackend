@@ -1,6 +1,7 @@
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Service.Rest.Middlewares;
 
 namespace Service.Rest
 {
@@ -49,18 +50,18 @@ namespace Service.Rest
                 var app = builder.Build();
 
                 app.ApplyMigrations();
-
+                
                 //if (app.Environment.IsDevelopment())
                 //{
                 app.UseSwagger();
                 app.UseSwaggerUI();
                 //}
-
-                //app.UseMiddleware<ExceptionHandlerMiddleware>();
+                
                 app.UseRouting();
-                app.UseCors("AllowAll");
                 app.UseAuthentication();
                 app.UseAuthorization();
+
+                app.UseMiddleware<LogRequestResponseMiddleware>();
                 app.UseEndpoints(cfg => { cfg.MapControllers(); });
 
                 //app.UseHangfireDashboard();

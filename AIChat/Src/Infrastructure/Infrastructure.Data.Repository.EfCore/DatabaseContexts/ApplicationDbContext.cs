@@ -1,4 +1,5 @@
-﻿using Domain.Core.Entities.ChatMessageTemplateAggregate;
+﻿using Domain.Core.ApiLog;
+using Domain.Core.Entities.ChatMessageTemplateAggregate;
 using Domain.Core.Entities.ChatSessionTemplateAggregate;
 using Domain.Core.Entities.FeedbackTemplateAggregate;
 using Domain.Core.Entities.InvalidatedTokenTemplateAggregate;
@@ -10,6 +11,7 @@ using Infrastructure.Data.Repository.EfCore.EntityConfigurations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace Infrastructure.Data.Repository.EfCore.DatabaseContexts
 {
@@ -25,6 +27,7 @@ namespace Infrastructure.Data.Repository.EfCore.DatabaseContexts
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<ExceptionLog> ExceptionLogs { get; set; }
         public DbSet<ErrorLog> ErrorLogs { get; set; }
+        public DbSet<ApiLog> ApiLogs { get; set; }
         public DbSet<UserToken> UserTokens { get; set; }
         public DbSet<InvalidatedToken> InvalidatedTokens { get; set; }
 

@@ -1,7 +1,10 @@
-﻿namespace Domain.Core.Exception
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Domain.Core.Exception
 {
     public class ExceptionLog
     {
+        [Key]
         public int Id { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public string ExceptionType { get; set; } = string.Empty;
