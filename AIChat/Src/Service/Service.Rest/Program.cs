@@ -58,6 +58,7 @@ namespace Service.Rest
                 //}
                 
                 app.UseRouting();
+                app.UseCors("AllowAll");
                 app.UseAuthentication();
                 app.UseAuthorization();
 
