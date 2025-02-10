@@ -4,7 +4,6 @@ using Application.Query.UserQueries;
 using Application.Query.ViewModels;
 using Hangfire;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Service.Rest.V1.Controllers;
@@ -16,52 +15,53 @@ namespace Service.UnitTest
     {
         private readonly Mock<IMediator> _mediatorMock;
         private readonly Mock<IBackgroundJobClient> _backgroundJobClientMock;
-        private readonly UserController _controller;
+        private readonly AuthenticateController _controller;
 
         public UserControllerTests()
         {
             _mediatorMock = new Mock<IMediator>();
             _backgroundJobClientMock = new Mock<IBackgroundJobClient>();
-            _controller = new UserController(_mediatorMock.Object, _backgroundJobClientMock.Object);
+            _controller = new AuthenticateController(_mediatorMock.Object, _backgroundJobClientMock.Object);
         }
 
         [Fact]
-        public async Task Login_ReturnsOkResult_WhenLoginIsSuccessful()
+        public async Task Login_ShouldReturnOkResult_WhenLoginIsSuccessful()
         {
             // Arrange
             var loginModel = new LoginModel { UserName = "testuser", Password = "password" };
-            var loginResult = new LoginViewModel { Success = true, Token = "token" };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<LoginCommand>(), default)).ReturnsAsync(loginResult);
+            var loginViewModel = new LoginViewModel { Success = true, Token = "token" };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<LoginCommand>(), default)).ReturnsAsync(loginViewModel);
 
             // Act
             var result = await _controller.Login(loginModel);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.Equal(loginResult, okResult.Value);
+            var returnValue = Assert.IsType<LoginViewModel>(okResult.Value);
+            Assert.True(returnValue.Success);
         }
 
         [Fact]
-        public async Task Login_ReturnsUnauthorizedResult_WhenLoginFails()
+        public async Task Login_ShouldReturnUnauthorizedResult_WhenLoginFails()
         {
             // Arrange
-            var loginModel = new LoginModel { UserName = "testuser", Password = "password" };
-            var loginResult = new LoginViewModel { Success = false, ErrorMessage = "Invalid username or password" };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<LoginCommand>(), default)).ReturnsAsync(loginResult);
+            var loginModel = new LoginModel { UserName = "testuser", Password = "wrongpassword" };
+            var loginViewModel = new LoginViewModel { Success = false, ErrorMessage = "Invalid username or password" };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<LoginCommand>(), default)).ReturnsAsync(loginViewModel);
 
             // Act
             var result = await _controller.Login(loginModel);
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result.Result);
-            Assert.Equal(loginResult.ErrorMessage, unauthorizedResult.Value);
+            Assert.Equal("Invalid username or password", unauthorizedResult.Value);
         }
 
         [Fact]
-        public async Task CreateUser_ReturnsOkResult_WhenUserIsCreatedSuccessfully()
+        public async Task CreateUser_ShouldReturnOkResult_WhenUserIsCreatedSuccessfully()
         {
             // Arrange
-            var createUserModel = new CreateUserModel { UserName = "testuser", Password = "password", Role = "User", FullName = "Test User", DepartmentId = 1 };
+            var createUserModel = new CreateUserModel { UserName = "newuser", Password = "password", Role = "User", FullName = "New User", DepartmentId = 1 };
             _mediatorMock.Setup(m => m.Send(It.IsAny<CreateUserCommand>(), default)).ReturnsAsync(true);
 
             // Act
@@ -73,10 +73,10 @@ namespace Service.UnitTest
         }
 
         [Fact]
-        public async Task CreateUser_ReturnsBadRequest_WhenUserCreationFails()
+        public async Task CreateUser_ShouldReturnBadRequest_WhenUserCreationFails()
         {
             // Arrange
-            var createUserModel = new CreateUserModel { UserName = "testuser", Password = "password", Role = "User", FullName = "Test User", DepartmentId = 1 };
+            var createUserModel = new CreateUserModel { UserName = "newuser", Password = "password", Role = "User", FullName = "New User", DepartmentId = 1 };
             _mediatorMock.Setup(m => m.Send(It.IsAny<CreateUserCommand>(), default)).ReturnsAsync(false);
 
             // Act
@@ -88,30 +88,29 @@ namespace Service.UnitTest
         }
 
         [Fact]
-        public async Task GetUserByUserName_ReturnsOkResult_WhenUserIsFound()
+        public async Task GetUserByToken_ShouldReturnOkResult_WhenUserIsFound()
         {
             // Arrange
-            var username = "testuser";
-            var userViewModel = new UserViewModel { UserName = username, FullName = "Test User" };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetUserByUserNameQuery>(), default)).ReturnsAsync(userViewModel);
+            var userViewModel = new UserViewModel { Id = Guid.NewGuid(), UserName = "testuser", FullName = "Test User", Email = "testuser@example.com", DepartmentId = 1 };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetUserByTokenQuery>(), default)).ReturnsAsync(userViewModel);
 
             // Act
-            var result = await _controller.GetUserByUserName(username);
+            var result = await _controller.GetUserByToken();
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.Equal(userViewModel, okResult.Value);
+            var returnValue = Assert.IsType<UserViewModel>(okResult.Value);
+            Assert.Equal("testuser", returnValue.UserName);
         }
 
         [Fact]
-        public async Task GetUserByUserName_ReturnsNotFoundResult_WhenUserIsNotFound()
+        public async Task GetUserByToken_ShouldReturnNotFoundResult_WhenUserIsNotFound()
         {
             // Arrange
-            var username = "testuser";
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetUserByUserNameQuery>(), default)).ReturnsAsync((UserViewModel)null);
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetUserByTokenQuery>(), default)).ReturnsAsync((UserViewModel)null);
 
             // Act
-            var result = await _controller.GetUserByUserName(username);
+            var result = await _controller.GetUserByToken();
 
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result.Result);
@@ -119,10 +118,10 @@ namespace Service.UnitTest
         }
 
         [Fact]
-        public async Task ChangePassword_ReturnsOkResult_WhenPasswordIsChangedSuccessfully()
+        public async Task ChangePassword_ShouldReturnOkResult_WhenPasswordIsChangedSuccessfully()
         {
             // Arrange
-            var changePasswordModel = new ChangePasswordModel { UserName = "testuser", OldPassword = "oldpassword", NewPassword = "newpassword" };
+            var changePasswordModel = new ChangePasswordModel { OldPassword = "oldpassword", NewPassword = "newpassword" };
             _mediatorMock.Setup(m => m.Send(It.IsAny<ChangePasswordCommand>(), default)).ReturnsAsync(true);
 
             // Act
@@ -134,10 +133,10 @@ namespace Service.UnitTest
         }
 
         [Fact]
-        public async Task ChangePassword_ReturnsUnauthorizedResult_WhenOldPasswordIsInvalid()
+        public async Task ChangePassword_ShouldReturnUnauthorizedResult_WhenOldPasswordIsInvalid()
         {
             // Arrange
-            var changePasswordModel = new ChangePasswordModel { UserName = "testuser", OldPassword = "oldpassword", NewPassword = "newpassword" };
+            var changePasswordModel = new ChangePasswordModel { OldPassword = "wrongoldpassword", NewPassword = "newpassword" };
             _mediatorMock.Setup(m => m.Send(It.IsAny<ChangePasswordCommand>(), default)).ReturnsAsync(false);
 
             // Act
@@ -149,69 +148,34 @@ namespace Service.UnitTest
         }
 
         [Fact]
-        public void ImportUsers_ReturnsOkResult_WhenFileIsValid()
+        public async Task Logout_ShouldReturnOkResult_WhenLogoutIsSuccessful()
         {
             // Arrange
-            var fileMock = new Mock<IFormFile>();
-            var fileName = "test.xlsx";
-            var filePath = Path.Combine(Path.GetTempPath(), fileName);
-            fileMock.Setup(f => f.FileName).Returns(fileName);
-            fileMock.Setup(f => f.Length).Returns(1);
-            fileMock.Setup(f => f.CopyTo(It.IsAny<Stream>())).Callback<Stream>(s => s.WriteByte(0));
+            var logOutViewModel = new LogOutViewModel { Success = true };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<LogOutCommand>(), default)).ReturnsAsync(logOutViewModel);
 
             // Act
-            var result = _controller.ImportUsers(fileMock.Object);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal("User import has been scheduled.", okResult.Value);
-        }
-
-        [Fact]
-        public void ImportUsers_ReturnsBadRequest_WhenFileIsInvalid()
-        {
-            // Arrange
-            var fileMock = new Mock<IFormFile>();
-            fileMock.Setup(f => f.Length).Returns(0);
-
-            // Act
-            var result = _controller.ImportUsers(fileMock.Object);
-
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Invalid file.", badRequestResult.Value);
-        }
-
-        [Fact]
-        public async Task Logout_ReturnsOkResult_WhenLogoutIsSuccessful()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var logoutResult = new LogOutViewModel { Success = true };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<LogOutCommand>(), default)).ReturnsAsync(logoutResult);
-
-            // Act
-            var result = await _controller.Logout(userId);
+            var result = await _controller.Logout();
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.Equal(logoutResult, okResult.Value);
+            var returnValue = Assert.IsType<LogOutViewModel>(okResult.Value);
+            Assert.True(returnValue.Success);
         }
 
         [Fact]
-        public async Task Logout_ReturnsBadRequest_WhenLogoutFails()
+        public async Task Logout_ShouldReturnBadRequestResult_WhenLogoutFails()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var logoutResult = new LogOutViewModel { Success = false, ErrorMessage = "Logout failed" };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<LogOutCommand>(), default)).ReturnsAsync(logoutResult);
+            var logOutViewModel = new LogOutViewModel { Success = false, ErrorMessage = "Logout failed" };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<LogOutCommand>(), default)).ReturnsAsync(logOutViewModel);
 
             // Act
-            var result = await _controller.Logout(userId);
+            var result = await _controller.Logout();
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            Assert.Equal(logoutResult.ErrorMessage, badRequestResult.Value);
+            Assert.Equal("Logout failed", badRequestResult.Value);
         }
     }
 }

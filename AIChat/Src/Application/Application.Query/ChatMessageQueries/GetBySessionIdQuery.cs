@@ -18,12 +18,10 @@ namespace Application.Query.ChatMessageQueries
     public class GetBySessionIdQueryHandler : IRequestHandler<GetBySessionIdQuery, IEnumerable<GetChatMessagesBySessionIdViewModel>>
     {
         private readonly IChatMessageRepository _chatMessageRepository;
-        private readonly ILogger<GetBySessionIdQueryHandler> _logger;
 
-        public GetBySessionIdQueryHandler(IChatMessageRepository chatMessageRepository, ILogger<GetBySessionIdQueryHandler> logger)
+        public GetBySessionIdQueryHandler(IChatMessageRepository chatMessageRepository)
         {
             _chatMessageRepository = chatMessageRepository;
-            _logger = logger;
         }
 
         public async Task<IEnumerable<GetChatMessagesBySessionIdViewModel>> Handle(GetBySessionIdQuery request, CancellationToken cancellationToken)
@@ -33,12 +31,11 @@ namespace Application.Query.ChatMessageQueries
             return chatMessages.Select(cm => new GetChatMessagesBySessionIdViewModel
             {
                 ChatSessionId = cm.ChatSessionId,
+                ChatMessageId = cm.Id,
                 Question = cm.Question,
                 Answer = cm.Answer,
                 Feedback = cm.Feedback != null ? new FeedbackViewModel
                 {
-                    ChatMessageId = cm.Feedback.ChatMessageId,
-                    ApplicationUserId = cm.Feedback.ApplicationUserId,
                     Rating = cm.Feedback.Rating
                 } : null
             });

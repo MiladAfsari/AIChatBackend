@@ -4,6 +4,8 @@ using Application.Query.ViewModels;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service.Rest.Attributes.LogException;
+using Service.Rest.Attributes.LogRequestResponse;
 using Service.Rest.V1.RequestModels;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
@@ -13,6 +15,7 @@ namespace Service.Rest.V1.Controllers
     [ApiController]
     [Route("api/ChatSession")]
     [Authorize]
+    [LogException]
     public class ChatSessionController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -22,6 +25,7 @@ namespace Service.Rest.V1.Controllers
             _mediator = mediator;
         }
 
+        [LogRequestResponse]
         [HttpPost("AddChatSession")]
         [SwaggerOperation("Add a new chat session")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
@@ -31,21 +35,19 @@ namespace Service.Rest.V1.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var result = await _mediator.Send(new AddChatSessionCommand(request.SessionName, request.Description, request.ApplicationUserId));
+            var result = await _mediator.Send(new AddChatSessionCommand(request.SessionName, request.Description));
 
             return result == Guid.Empty ? StatusCode(500, "Error adding chat session") : Ok(result);
         }
 
-        [HttpGet("GetChatSessionsByUserId/{userId}")]
-        [SwaggerOperation("Get chat sessions by user ID")]
+        [HttpGet("GetChatSessions")]
+        [SwaggerOperation("Get all chat sessions")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
         [SwaggerResponse((int)HttpStatusCode.OK, "Chat sessions retrieved successfully", typeof(IEnumerable<GetChatSessionsByUserIdViewModel>))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
-        public async Task<ActionResult<IEnumerable<GetChatSessionsByUserIdViewModel>>> GetChatSessionsByUserId(Guid userId)
+        public async Task<ActionResult<IEnumerable<GetChatSessionsByUserIdViewModel>>> GetChatSessions()
         {
-            if (userId == Guid.Empty) return BadRequest("Invalid user ID");
-
-            var result = await _mediator.Send(new GetByUserIdQuery(userId));
+            var result = await _mediator.Send(new GetAllChatSessionsQueryByUserId());
 
             return Ok(result);
         }

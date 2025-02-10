@@ -1,49 +1,65 @@
-﻿using Domain.Core.Entities.ChatSessionTemplateAggregate;
+﻿using Application.Service.Common;
+using Domain.Core.Entities.ChatSessionTemplateAggregate;
 using Domain.Core.UnitOfWorkContracts;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Command.ChatSessionCommands
 {
-    public class AddChatSessionCommand : IRequest<Guid>
+    public class AddChatSessionCommand : IRequest<Guid?>
     {
         public string SessionName { get; private set; }
         public string Description { get; private set; }
-        public Guid ApplicationUserId { get; private set; }
 
-        public AddChatSessionCommand(string sessionName, string description, Guid applicationUserId)
+        public AddChatSessionCommand(string sessionName, string description)
         {
             SessionName = sessionName;
             Description = description;
-            ApplicationUserId = applicationUserId;
         }
     }
 
-    public class AddChatSessionCommandHandler : IRequestHandler<AddChatSessionCommand, Guid>
+    public class AddChatSessionCommandHandler : IRequestHandler<AddChatSessionCommand, Guid?>
     {
         private readonly IChatSessionRepository _chatSessionRepository;
         private readonly IApplicationDbContextUnitOfWork _unitOfWork;
-        private readonly ILogger<AddChatSessionCommandHandler> _logger;
+        private readonly ITokenService _tokenService;
 
-        public AddChatSessionCommandHandler(IChatSessionRepository chatSessionRepository, IApplicationDbContextUnitOfWork unitOfWork, ILogger<AddChatSessionCommandHandler> logger)
+        public AddChatSessionCommandHandler(IChatSessionRepository chatSessionRepository, IApplicationDbContextUnitOfWork unitOfWork, ITokenService tokenService)
         {
             _chatSessionRepository = chatSessionRepository;
             _unitOfWork = unitOfWork;
-            _logger = logger;
+            _tokenService = tokenService;
         }
 
-        public async Task<Guid> Handle(AddChatSessionCommand request, CancellationToken cancellationToken)
+        public async Task<Guid?> Handle(AddChatSessionCommand request, CancellationToken cancellationToken)
         {
+            var token = await _tokenService.GetTokenFromRequestAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                throw new UnauthorizedAccessException("Invalid token.");
+            }
+
+            var userId = await _tokenService.GetUserIdFromTokenAsync(token);
+            if (userId == null)
+            {
+                throw new UnauthorizedAccessException("Invalid user.");
+            }
+
+            var existingSessions = await _chatSessionRepository.GetByUserIdAsync(userId.Value);
+            if (existingSessions.Any(s => s.SessionName == request.SessionName))
+            {
+                return Guid.Empty;
+            }
+
             var chatSession = new ChatSession
             {
                 SessionName = request.SessionName,
                 Description = request.Description,
-                ApplicationUserId = request.ApplicationUserId
+                ApplicationUserId = userId.Value
             };
 
-            var result = await _chatSessionRepository.AddAsync(chatSession);
+            await _chatSessionRepository.AddAsync(chatSession);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return result;
+            return chatSession.Id;
         }
     }
 }

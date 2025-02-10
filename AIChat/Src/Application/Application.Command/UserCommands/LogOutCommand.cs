@@ -8,25 +8,17 @@ namespace Application.Command.UserCommands
 {
     public class LogOutCommand : IRequest<LogOutViewModel>
     {
-        public Guid UserId { get; }
-
-        public LogOutCommand(Guid userId)
-        {
-            UserId = userId != Guid.Empty ? userId : throw new ArgumentNullException(nameof(userId));
-        }
     }
 
     public class LogOutCommandHandler : IRequestHandler<LogOutCommand, LogOutViewModel>
     {
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
-        private readonly ILogger<LogOutCommandHandler> _logger;
 
-        public LogOutCommandHandler(IUserRepository userRepository, ITokenService tokenService, ILogger<LogOutCommandHandler> logger)
+        public LogOutCommandHandler(IUserRepository userRepository, ITokenService tokenService)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _userRepository = userRepository;
+            _tokenService = tokenService;
         }
 
         public async Task<LogOutViewModel> Handle(LogOutCommand request, CancellationToken cancellationToken)
@@ -36,10 +28,29 @@ namespace Application.Command.UserCommands
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var user = await _userRepository.GetUserByIdAsync(request.UserId.ToString());
+            var token = await _tokenService.GetTokenFromRequestAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                return new LogOutViewModel
+                {
+                    Success = false,
+                    ErrorMessage = "Token not found."
+                };
+            }
+
+            var userId = await _tokenService.GetUserIdFromTokenAsync(token);
+            if (userId == null)
+            {
+                return new LogOutViewModel
+                {
+                    Success = false,
+                    ErrorMessage = "Invalid token."
+                };
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(userId.ToString());
             if (user == null)
             {
-                _logger.LogWarning("Logout attempt for non-existent user: {UserId}", request.UserId);
                 return new LogOutViewModel
                 {
                     Success = false,
@@ -47,11 +58,7 @@ namespace Application.Command.UserCommands
                 };
             }
 
-            var token = _tokenService.GetTokenFromRequest();
-            if (!string.IsNullOrEmpty(token))
-            {
-                _tokenService.InvalidateToken(token, request.UserId);
-            }
+            await _tokenService.InvalidateTokenAsync(token, userId.Value);
 
             return new LogOutViewModel
             {

@@ -41,7 +41,15 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
 
         public async Task AddAsync(Feedback feedback)
         {
-            await _context.Feedbacks.AddAsync(feedback);
+            try
+            {
+                await _context.Feedbacks.AddAsync(feedback);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         public async Task UpdateAsync(Feedback feedback)

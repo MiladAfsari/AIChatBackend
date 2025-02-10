@@ -23,14 +23,8 @@ namespace Service.UnitTest
         public async Task AddFeedback_ReturnsOkResult_WhenFeedbackIsAddedSuccessfully()
         {
             // Arrange
-            var request = new AddFeedbackModel
-            {
-                ChatMessageId = Guid.NewGuid(),
-                ApplicationUserId = Guid.NewGuid(),
-                Rating = 5
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<AddFeedbackCommand>(), It.IsAny<CancellationToken>()))
-                         .ReturnsAsync(true);
+            var request = new AddFeedbackModel { ChatMessageId = Guid.NewGuid(), Rating = 5 };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<AddFeedbackCommand>(), default)).ReturnsAsync(true);
 
             // Act
             var result = await _controller.AddFeedback(request);
@@ -45,7 +39,7 @@ namespace Service.UnitTest
         public async Task AddFeedback_ReturnsBadRequest_WhenModelStateIsInvalid()
         {
             // Arrange
-            var request = new AddFeedbackModel();
+            var request = new AddFeedbackModel { ChatMessageId = Guid.NewGuid(), Rating = 5 };
             _controller.ModelState.AddModelError("ChatMessageId", "Required");
 
             // Act
@@ -57,17 +51,11 @@ namespace Service.UnitTest
         }
 
         [Fact]
-        public async Task AddFeedback_ReturnsInternalServerError_WhenExceptionIsThrown()
+        public async Task AddFeedback_ReturnsInternalServerError_WhenFeedbackIsNotAdded()
         {
             // Arrange
-            var request = new AddFeedbackModel
-            {
-                ChatMessageId = Guid.NewGuid(),
-                ApplicationUserId = Guid.NewGuid(),
-                Rating = 5
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<AddFeedbackCommand>(), It.IsAny<CancellationToken>()))
-                         .ThrowsAsync(new Exception());
+            var request = new AddFeedbackModel { ChatMessageId = Guid.NewGuid(), Rating = 5 };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<AddFeedbackCommand>(), default)).ReturnsAsync(false);
 
             // Act
             var result = await _controller.AddFeedback(request);
@@ -75,7 +63,7 @@ namespace Service.UnitTest
             // Assert
             var statusCodeResult = Assert.IsType<ObjectResult>(result.Result);
             Assert.Equal((int)HttpStatusCode.InternalServerError, statusCodeResult.StatusCode);
-            Assert.Equal("Internal server error", statusCodeResult.Value);
+            Assert.Equal("Error adding feedback", statusCodeResult.Value);
         }
     }
 }

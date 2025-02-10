@@ -1,7 +1,6 @@
 ﻿using Domain.Core.Entities.UserTemplateAggregate;
 using Domain.Core.UnitOfWorkContracts;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Command.UserCommands
 {
@@ -26,13 +25,11 @@ namespace Application.Command.UserCommands
     {
         private readonly IUserRepository _userRepository;
         private readonly IApplicationDbContextUnitOfWork _unitOfWork;
-        private readonly ILogger<CreateUserCommandHandler> _logger;
 
-        public CreateUserCommandHandler(IUserRepository userRepository, IApplicationDbContextUnitOfWork unitOfWork, ILogger<CreateUserCommandHandler> logger)
+        public CreateUserCommandHandler(IUserRepository userRepository, IApplicationDbContextUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
-            _logger = logger;
         }
 
         public async Task<bool> Handle(CreateUserCommand request, CancellationToken cancellationToken)

@@ -3,7 +3,6 @@ using Application.Command.ViewModels;
 using Application.Query.UserQueries;
 using Application.Query.ViewModels;
 using Hangfire;
-using Infrastructure.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,14 +15,14 @@ using System.Net;
 namespace Service.Rest.V1.Controllers
 {
     [ApiController]
-    [Route("api/users")]
+    [Route("api/Users")]
     [LogException]
-    public class UserController : ControllerBase
+    public class AuthenticateController : ControllerBase
     {
         private readonly IMediator _mediator;
         private readonly IBackgroundJobClient _backgroundJobClient;
 
-        public UserController(IMediator mediator, IBackgroundJobClient backgroundJobClient)
+        public AuthenticateController(IMediator mediator, IBackgroundJobClient backgroundJobClient)
         {
             _mediator = mediator;
             _backgroundJobClient = backgroundJobClient;
@@ -31,6 +30,7 @@ namespace Service.Rest.V1.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
+        [LogRequestResponse]
         [SwaggerOperation("User login")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
         [SwaggerResponse((int)HttpStatusCode.Unauthorized, "Invalid username or password")]
@@ -45,7 +45,6 @@ namespace Service.Rest.V1.Controllers
         }
 
         [AllowAnonymous]
-        [LogRequestResponse]
         [HttpPost("CreateUser")]
         [SwaggerOperation("Create a new user")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
@@ -59,20 +58,14 @@ namespace Service.Rest.V1.Controllers
             return result ? Ok(true) : BadRequest("User creation failed.");
         }
 
-        [HttpGet]
+        [HttpGet("GetUser")]
         [Authorize]
-        [Route("{username}")]
-        [SwaggerOperation("Get user by username")]
+        [SwaggerOperation("Get user by token")]
         [SwaggerResponse((int)HttpStatusCode.NotFound, "User not found")]
         [SwaggerResponse((int)HttpStatusCode.OK, "User retrieved successfully", typeof(UserViewModel))]
-        public async Task<ActionResult<UserViewModel>> GetUserByUserName([FromRoute] string username)
+        public async Task<ActionResult<UserViewModel>> GetUserByToken()
         {
-            if (string.IsNullOrEmpty(username))
-            {
-                return BadRequest("Username cannot be null or empty.");
-            }
-
-            var result = await _mediator.Send(new GetUserByUserNameQuery(username));
+            var result = await _mediator.Send(new GetUserByTokenQuery());
             return result == null ? NotFound("User not found.") : Ok(result);
         }
 
@@ -87,53 +80,49 @@ namespace Service.Rest.V1.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var result = await _mediator.Send(new ChangePasswordCommand(request.UserName, request.OldPassword, request.NewPassword));
+            var result = await _mediator.Send(new ChangePasswordCommand(request.OldPassword, request.NewPassword));
             return result ? Ok(true) : Unauthorized("Invalid old password.");
         }
 
-        [HttpPost("ImportUsers")]
+        // [HttpPost("ImportUsers")]
+        // [Authorize]
+        // [SwaggerOperation(
+        //    Summary = "Import users from file",
+        //    Description = "Uploads an Excel file to import users",
+        //    OperationId = "ImportUsers",
+        //    Tags = new[] { "User" }
+        //)]
+        // [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid file")]
+        // [SwaggerResponse((int)HttpStatusCode.OK, "User import has been scheduled")]
+        // [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
+        // [Consumes("multipart/form-data")]
+        // public IActionResult ImportUsers(IFormFile file)
+        // {
+        //     if (file == null || file.Length == 0)
+        //     {
+        //         return BadRequest("Invalid file.");
+        //     }
+
+        //     var filePath = Path.Combine(Path.GetTempPath(), file.FileName);
+        //     using (var stream = new FileStream(filePath, FileMode.Create))
+        //     {
+        //         file.CopyTo(stream);
+        //     }
+
+        //     _backgroundJobClient.Enqueue<UserImportService>(service => service.ImportUsersFromExcelAsync(filePath));
+
+        //     return Ok("User import has been scheduled.");
+        // }
+
         [Authorize]
-        [SwaggerOperation(
-           Summary = "Import users from file",
-           Description = "Uploads an Excel file to import users",
-           OperationId = "ImportUsers",
-           Tags = new[] { "User" }
-       )]
-        [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid file")]
-        [SwaggerResponse((int)HttpStatusCode.OK, "User import has been scheduled")]
-        [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
-        [Consumes("multipart/form-data")]
-        public IActionResult ImportUsers(IFormFile file)
-        {
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest("Invalid file.");
-            }
-
-            var filePath = Path.Combine(Path.GetTempPath(), file.FileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                file.CopyTo(stream);
-            }
-
-            _backgroundJobClient.Enqueue<UserImportService>(service => service.ImportUsersFromExcelAsync(filePath));
-
-            return Ok("User import has been scheduled.");
-        }
-
-        [Authorize]
+        [LogRequestResponse]
         [HttpPost("logout")]
         [SwaggerOperation("User logout")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
         [SwaggerResponse((int)HttpStatusCode.OK, "Logout successful", typeof(LogOutViewModel))]
-        public async Task<ActionResult<LogOutViewModel>> Logout([FromQuery] Guid userId)
+        public async Task<ActionResult<LogOutViewModel>> Logout()
         {
-            if (userId == Guid.Empty)
-            {
-                return BadRequest("User is not authenticated.");
-            }
-
-            var result = await _mediator.Send(new LogOutCommand(userId));
+            var result = await _mediator.Send(new LogOutCommand());
 
             return result.Success ? Ok(result) : BadRequest(result.ErrorMessage);
         }

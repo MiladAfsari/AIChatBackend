@@ -35,13 +35,13 @@ namespace Infrastructure.Services
             _unitOfWork = unitOfWork;
         }
 
-        public string GenerateToken(ApplicationUser user)
+        public async Task<string> GenerateTokenAsync(ApplicationUser user)
         {
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+                    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                };
 
             var creds = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
 
@@ -68,19 +68,19 @@ namespace Infrastructure.Services
                 ExpiresAt = tokenDescriptor.Expires.Value
             };
 
-            _userTokenRepository.AddTokenAsync(userToken);
-            _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
+            await _userTokenRepository.AddTokenAsync(userToken);
+            await _unitOfWork.SaveChangesAsync();
 
             return tokenString;
         }
 
-        public void InvalidateToken(string token, Guid userId)
+        public async Task InvalidateTokenAsync(string token, Guid userId)
         {
             _invalidatedTokenRepository.InvalidateToken(token, userId);
-            _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public bool IsTokenValid(string token)
+        public async Task<bool> IsTokenValidAsync(string token)
         {
             if (_invalidatedTokenRepository.GetInvalidatedToken(token) != null)
             {
@@ -109,10 +109,16 @@ namespace Infrastructure.Services
             return true;
         }
 
-        public string GetTokenFromRequest()
+        public async Task<string> GetTokenFromRequestAsync()
         {
             var httpContext = _httpContextAccessor.HttpContext;
             return httpContext?.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        }
+
+        public async Task<Guid?> GetUserIdFromTokenAsync(string token)
+        {
+            var userToken = await _userTokenRepository.GetTokenAsync(token);
+            return userToken?.ApplicationUserId;
         }
     }
 }

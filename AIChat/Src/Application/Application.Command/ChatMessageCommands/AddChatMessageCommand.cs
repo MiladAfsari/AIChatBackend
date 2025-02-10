@@ -1,7 +1,7 @@
 ﻿using Domain.Core.Entities.ChatMessageTemplateAggregate;
+using Domain.Core.Entities.ChatSessionTemplateAggregate;
 using Domain.Core.UnitOfWorkContracts;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Command.ChatMessageCommands
 {
@@ -23,17 +23,24 @@ namespace Application.Command.ChatMessageCommands
     {
         private readonly IChatMessageRepository _chatMessageRepository;
         private readonly IApplicationDbContextUnitOfWork _unitOfWork;
-        private readonly ILogger<AddChatMessageCommandHandler> _logger;
+        private readonly IChatSessionRepository _chatSessionRepository;
 
-        public AddChatMessageCommandHandler(IChatMessageRepository chatMessageRepository, IApplicationDbContextUnitOfWork unitOfWork, ILogger<AddChatMessageCommandHandler> logger)
+        public AddChatMessageCommandHandler(IChatMessageRepository chatMessageRepository, IApplicationDbContextUnitOfWork unitOfWork, IChatSessionRepository chatSessionRepository)
         {
             _chatMessageRepository = chatMessageRepository;
             _unitOfWork = unitOfWork;
-            _logger = logger;
+            _chatSessionRepository = chatSessionRepository;
         }
 
         public async Task<Guid?> Handle(AddChatMessageCommand request, CancellationToken cancellationToken)
         {
+            // Check if the ChatSession exists
+            var chatSession = await _chatSessionRepository.GetByIdAsync(request.ChatSessionId);
+            if (chatSession == null)
+            {
+                return null;
+            }
+
             var chatMessage = new ChatMessage
             {
                 ChatSessionId = request.ChatSessionId,

@@ -90,7 +90,8 @@ namespace Service.Rest
                 options.SetAssemblies(new Assembly[]
                 {
                     Assembly.GetAssembly(typeof(BaseCommandHandler)),
-                    Assembly.GetAssembly(typeof(BaseQueryHandler))
+                    Assembly.GetAssembly(typeof(BaseQueryHandler)),
+                    typeof(BaseCommandValidator<>).Assembly
                 });
                 options.EnableAutoLogging = false;
                 options.EnableAutoValidation = true;

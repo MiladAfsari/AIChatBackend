@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Service.Rest.V1.Controllers;
 using Service.Rest.V1.RequestModels;
-using System.Net;
 
 namespace Service.UnitTest
 {
@@ -22,14 +21,14 @@ namespace Service.UnitTest
         }
 
         [Fact]
-        public async Task AddChatMessage_ReturnsOkResult_WhenRequestIsValid()
+        public async Task AddChatMessage_ReturnsOkResult_WhenMessageIsAdded()
         {
             // Arrange
             var request = new AddChatMessageModel
             {
                 ChatSessionId = Guid.NewGuid(),
-                Question = "What is your name?",
-                Answer = "GitHub Copilot"
+                Question = "Test question",
+                Answer = "Test answer"
             };
             _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatMessageCommand>(), default))
                          .ReturnsAsync(Guid.NewGuid());
@@ -39,7 +38,7 @@ namespace Service.UnitTest
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
+            Assert.NotNull(okResult.Value);
         }
 
         [Fact]
@@ -53,45 +52,43 @@ namespace Service.UnitTest
             var result = await _controller.AddChatMessage(request);
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            Assert.Equal((int)HttpStatusCode.BadRequest, badRequestResult.StatusCode);
+            Assert.IsType<BadRequestObjectResult>(result.Result);
         }
 
         [Fact]
-        public async Task GetChatMessagesBySessionId_ReturnsOkResult_WhenSessionIdIsValid()
+        public async Task GetChatMessagesBySessionId_ReturnsOkResult_WithMessages()
         {
             // Arrange
             var sessionId = Guid.NewGuid();
-            var chatMessages = new List<GetChatMessagesBySessionIdViewModel>
+            var messages = new List<GetChatMessagesBySessionIdViewModel>
                 {
                     new GetChatMessagesBySessionIdViewModel
                     {
                         ChatSessionId = sessionId,
-                        Question = "What is your name?",
-                        Answer = "GitHub Copilot",
-                        Feedback = new FeedbackViewModel()
+                        ChatMessageId = Guid.NewGuid(),
+                        Question = "Test question",
+                        Answer = "Test answer"
                     }
                 };
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetBySessionIdQuery>(), default))
-                         .ReturnsAsync(chatMessages);
+                         .ReturnsAsync(messages);
 
             // Act
             var result = await _controller.GetChatMessagesBySessionId(sessionId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
+            Assert.Equal(messages, okResult.Value);
         }
 
         [Fact]
-        public async Task GetChatMessagesBySessionId_ReturnsBadRequest_WhenSessionIdIsInvalid()
+        public async Task GetChatMessagesBySessionId_ReturnsBadRequest_WhenSessionIdIsEmpty()
         {
             // Act
             var result = await _controller.GetChatMessagesBySessionId(Guid.Empty);
 
             // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
-            Assert.Equal((int)HttpStatusCode.BadRequest, badRequestResult.StatusCode);
+            Assert.IsType<BadRequestObjectResult>(result.Result);
         }
     }
 }

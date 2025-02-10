@@ -4,9 +4,10 @@ namespace Application.Service.Common
 {
     public interface ITokenService
     {
-        string GenerateToken(ApplicationUser user);
-        void InvalidateToken(string token, Guid userId);
-        bool IsTokenValid(string token);
-        string GetTokenFromRequest();
+        Task<string> GenerateTokenAsync(ApplicationUser user);
+        Task InvalidateTokenAsync(string token, Guid userId);
+        Task<bool> IsTokenValidAsync(string token);
+        Task<string> GetTokenFromRequestAsync();
+        Task<Guid?> GetUserIdFromTokenAsync(string token);
     }
 }

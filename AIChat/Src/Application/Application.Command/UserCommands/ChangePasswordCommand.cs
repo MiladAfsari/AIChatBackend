@@ -1,19 +1,17 @@
-﻿using Domain.Core.Entities.UserTemplateAggregate;
+﻿using Application.Service.Common;
+using Domain.Core.Entities.UserTemplateAggregate;
 using Domain.Core.UnitOfWorkContracts;
 using MediatR;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Command.UserCommands
 {
     public class ChangePasswordCommand : IRequest<bool>
     {
-        public string UserName { get; private set; }
         public string OldPassword { get; private set; }
         public string NewPassword { get; private set; }
 
-        public ChangePasswordCommand(string userName, string oldPassword, string newPassword)
+        public ChangePasswordCommand(string oldPassword, string newPassword)
         {
-            UserName = userName;
             OldPassword = oldPassword;
             NewPassword = newPassword;
         }
@@ -21,38 +19,48 @@ namespace Application.Command.UserCommands
     public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, bool>
     {
         private readonly IUserRepository _userRepository;
+        private readonly ITokenService _tokenService;
         private readonly IApplicationDbContextUnitOfWork _unitOfWork;
-        private readonly ILogger<ChangePasswordCommandHandler> _logger;
 
-        public ChangePasswordCommandHandler(IUserRepository userRepository, IApplicationDbContextUnitOfWork unitOfWork, ILogger<ChangePasswordCommandHandler> logger)
+        public ChangePasswordCommandHandler(IUserRepository userRepository, IApplicationDbContextUnitOfWork unitOfWork, ITokenService tokenService)
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
-            _logger = logger;
+            _tokenService = tokenService;
         }
 
         public async Task<bool> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
         {
-            // Validate the old password
-            var user = await _userRepository.AuthenticateAsync(request.UserName, request.OldPassword);
+            var token = await _tokenService.GetTokenFromRequestAsync();
+            if (string.IsNullOrEmpty(token))
+            {
+                return false;
+            }
+
+            var userId = await _tokenService.GetUserIdFromTokenAsync(token);
+            if (userId == null)
+            {
+                return false;
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(userId.ToString());
             if (user == null)
             {
-                _logger.LogWarning("Invalid old password for user {UserName}", request.UserName);
                 return false;
             }
 
-            // Change the password
-            var isPasswordChanged = await _userRepository.ChangePasswordAsync(request.UserName, request.NewPassword);
-            if (!isPasswordChanged)
+            if (_userRepository.AuthenticateAsync(user.UserName, request.OldPassword) == null)
             {
-                _logger.LogError("Failed to change password for user {UserName}", request.UserName);
                 return false;
             }
 
-            // Save changes
+            if (!await _userRepository.ChangePasswordAsync(user.UserName, request.NewPassword))
+            {
+                return false;
+            }
+
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Password changed successfully for user {UserName}", request.UserName);
             return true;
         }
     }

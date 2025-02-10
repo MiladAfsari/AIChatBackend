@@ -12,7 +12,7 @@ public class TokenValidationFilter : IAuthorizationFilter
         _tokenService = tokenService;
     }
 
-    public void OnAuthorization(AuthorizationFilterContext context)
+    public async void OnAuthorization(AuthorizationFilterContext context)
     {
         // Check if the action or controller has the [AllowAnonymous] attribute
         var allowAnonymous = context.ActionDescriptor.EndpointMetadata
@@ -23,8 +23,8 @@ public class TokenValidationFilter : IAuthorizationFilter
             return;
         }
 
-        var token = _tokenService.GetTokenFromRequest();
-        if (string.IsNullOrEmpty(token) || !_tokenService.IsTokenValid(token))
+        var token = await _tokenService.GetTokenFromRequestAsync();
+        if (string.IsNullOrEmpty(token) || ! await _tokenService.IsTokenValidAsync(token))
         {
             context.Result = new UnauthorizedResult();
         }

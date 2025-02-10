@@ -14,11 +14,7 @@ namespace Service.Rest.Attributes.LogException
             string controllerName = $"{context.Controller}.{action}";
             string exception = $"{context.Exception!.Message}";
 
-            var userManager = context.HttpContext.RequestServices.GetService<UserManager<IdentityUser>>();
-            var user = context.HttpContext.User;
-            string username = user.Identity?.IsAuthenticated == true ? userManager.GetUserName(user) ?? "Unknown" : "Anonymous";
-
-            var createCommand = new CreateErrorLogCommand(controllerName, action, exception, DateTime.UtcNow, username);
+            var createCommand = new CreateErrorLogCommand(controllerName, action, exception, DateTime.UtcNow);
             _ = mediator!.Send(createCommand).Result;
         }
     }

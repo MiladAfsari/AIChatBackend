@@ -4,6 +4,8 @@ using Application.Query.ViewModels.Application.Query.ViewModels;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Service.Rest.Attributes.LogException;
+using Service.Rest.Attributes.LogRequestResponse;
 using Service.Rest.V1.RequestModels;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
@@ -13,6 +15,7 @@ namespace Service.Rest.V1.Controllers
     [ApiController]
     [Route("api/ChatMessage")]
     [Authorize]
+    [LogException]
     public class ChatMessageController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -22,6 +25,7 @@ namespace Service.Rest.V1.Controllers
             _mediator = mediator;
         }
 
+        [LogRequestResponse]
         [HttpPost("AddChatMessage")]
         [SwaggerOperation("Add a new chat message")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]

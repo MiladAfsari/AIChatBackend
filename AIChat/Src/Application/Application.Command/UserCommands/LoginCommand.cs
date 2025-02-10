@@ -4,7 +4,6 @@ using Application.Service.Common;
 using Domain.Core.Entities.UserTemplateAggregate;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
 
 namespace Application.Command.UserCommands
 {
@@ -24,13 +23,11 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginViewModel>
 {
     private readonly ITokenService _tokenService;
     private readonly IUserRepository _userRepository;
-    private readonly ILogger<LoginCommandHandler> _logger;
 
-    public LoginCommandHandler(IUserRepository userRepository, ITokenService tokenService, ILogger<LoginCommandHandler> logger)
+    public LoginCommandHandler(IUserRepository userRepository, ITokenService tokenService)
     {
         _userRepository = userRepository;
         _tokenService = tokenService;
-        _logger = logger;
     }
 
     public async Task<LoginViewModel> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -44,7 +41,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginViewModel>
         var user = await _userRepository.GetUserByUserNameAsync(request.UserName);
         if (user == null || !VerifyPassword(user, request.Password))
         {
-            _logger.LogWarning("Invalid login attempt for user: {UserName}", request.UserName);
             return new LoginViewModel
             {
                 Success = false,
@@ -53,7 +49,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginViewModel>
         }
 
         // Generate token
-        var token = _tokenService.GenerateToken(user);
+        var token = await _tokenService.GenerateTokenAsync(user);
 
         return new LoginViewModel
         {
