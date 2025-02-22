@@ -13,11 +13,7 @@ namespace Service.Rest
 
             try
             {
-                builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                {
-                    options.UseNpgsql(builder.Configuration["ConnectionStrings:ApplicationDbConnection"]);
-                    options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
-                });
+                builder.Services.AddPostgresDbContext(builder.Configuration);
 
                 builder.Services.AddHttpContextAccessor();
                 builder.Services.AddOptions();

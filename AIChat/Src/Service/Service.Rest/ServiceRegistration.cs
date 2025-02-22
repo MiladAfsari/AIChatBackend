@@ -33,6 +33,37 @@ namespace Service.Rest
 {
     public static class ServiceRegistration
     {
+        public static IServiceCollection AddPostgresDbContext(this IServiceCollection services, IConfiguration configuration)
+        {
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+            if (environment == "Production")
+            {
+                var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+                var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+                var dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "AIChatDb";
+                var dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "admin";
+                var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "admin1234";
+
+                var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+
+                services.AddDbContext<ApplicationDbContext>(options =>
+                {
+                    options.UseNpgsql(connectionString);
+                    options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
+                });
+            }
+            else
+            {
+                services.AddDbContext<ApplicationDbContext>(options =>
+                {
+                    options.UseNpgsql(configuration.GetConnectionString("ApplicationDbConnection"));
+                    options.UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll);
+                });
+            }
+
+            return services;
+        }
         public static void RegisterRepositories(this IServiceCollection services)
         {
             services.AddScoped<IUserRepository, UserRepository>();
