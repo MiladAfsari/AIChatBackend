@@ -1,5 +1,4 @@
-﻿using Application.Command.ChatMessageCommands;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Application.Command.Validators
 {

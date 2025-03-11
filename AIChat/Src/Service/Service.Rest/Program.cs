@@ -26,6 +26,7 @@ namespace Service.Rest
                 builder.Services.RegisterRepositories();
                 builder.Services.RegisterUnitOfWorks();
                 builder.Services.RegisterTokenService();
+                builder.Services.AddChatBotInfrastructure(builder.Configuration);
                 builder.Services.RegisterJWTAuthentication(builder.Configuration);
                 builder.Services.RegisterHangfireService(builder.Configuration);
 

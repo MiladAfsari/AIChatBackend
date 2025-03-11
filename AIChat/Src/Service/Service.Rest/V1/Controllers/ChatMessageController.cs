@@ -1,5 +1,4 @@
-﻿using Application.Command.ChatMessageCommands;
-using Application.Query.ChatMessageQueries;
+﻿using Application.Query.ChatMessageQueries;
 using Application.Query.ViewModels.Application.Query.ViewModels;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -29,15 +28,20 @@ namespace Service.Rest.V1.Controllers
         [HttpPost("AddChatMessage")]
         [SwaggerOperation("Add a new chat message")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
-        [SwaggerResponse((int)HttpStatusCode.OK, "Chat message added successfully", typeof(Guid?))]
+        [SwaggerResponse((int)HttpStatusCode.OK, "Chat message added successfully", typeof(string))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
-        public async Task<ActionResult<Guid?>> AddChatMessage([FromBody] AddChatMessageModel request)
+        public async Task<ActionResult<string>> AddChatMessage([FromBody] AddChatMessageModel request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var result = await _mediator.Send(new AddChatMessageCommand(request.ChatSessionId, request.Question, request.Answer));
+            var result = await _mediator.Send(new AddChatMessageCommand(request.ChatSessionId, request.Question));
 
-            return result.HasValue ? Ok(result) : StatusCode(500, "Error adding chat message");
+            if (!result.IsSuccess)
+            {
+                return StatusCode(500, result.Message);
+            }
+
+            return Ok(result.Data);
         }
 
         [HttpGet("GetChatMessagesBySessionId/{sessionId}")]
