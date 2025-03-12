@@ -44,11 +44,11 @@ namespace Application.Command.ChatSessionCommands
                 throw new UnauthorizedAccessException("Invalid user.");
             }
 
-            var existingSessions = await _chatSessionRepository.GetByUserIdAsync(userId.Value);
-            if (existingSessions.Any(s => s.SessionName == request.SessionName))
-            {
-                return Guid.Empty;
-            }
+            //var existingSessions = await _chatSessionRepository.GetByUserIdAsync(userId.Value);
+            //if (existingSessions.Any(s => s.SessionName == request.SessionName))
+            //{
+            //    return Guid.Empty;
+            //}
 
             var chatSession = new ChatSession
             {
