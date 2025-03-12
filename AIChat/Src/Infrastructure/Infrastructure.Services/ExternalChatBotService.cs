@@ -34,12 +34,12 @@ namespace Infrastructure.Services
                 {
                     return answer.GetString();
                 }
-                return string.Empty; // Return empty string if "response" property is not found
+                return string.Empty; 
             }
             catch (HttpRequestException ex)
             {
                 _logger.LogError($"Error calling third-party API: {ex.Message}");
-                return string.Empty; // Return empty string if request fails
+                return string.Empty; 
             }
         }
     }
