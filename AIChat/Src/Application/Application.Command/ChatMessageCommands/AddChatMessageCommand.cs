@@ -40,8 +40,7 @@ public class AddChatMessageCommandHandler : IRequestHandler<AddChatMessageComman
             return CommandResult.Failure("Chat session not found.");
         }
 
-        // Get response from external chat bot service with timeout handling
-        string answer;
+        string answer = string.Empty;
         try
         {
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(40));
@@ -70,23 +69,9 @@ public class AddChatMessageCommandHandler : IRequestHandler<AddChatMessageComman
 
         await _chatMessageRepository.AddAsync(chatMessage);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return CommandResult.Success(answer);
+
+        var resultData = new { Answer = answer, ChatMessageId = chatMessage.Id };
+        return CommandResult.Success(System.Text.Json.JsonSerializer.Serialize(resultData));
     }
 }
 
-public class CommandResult
-{
-    public bool IsSuccess { get; }
-    public string Message { get; }
-    public string Data { get; }
-
-    private CommandResult(bool isSuccess, string message, string data = null)
-    {
-        IsSuccess = isSuccess;
-        Message = message;
-        Data = data;
-    }
-
-    public static CommandResult Success(string data) => new CommandResult(true, "Success", data);
-    public static CommandResult Failure(string message) => new CommandResult(false, message);
-}
