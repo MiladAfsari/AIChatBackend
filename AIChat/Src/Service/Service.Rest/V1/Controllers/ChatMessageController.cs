@@ -1,5 +1,6 @@
 ﻿using Application.Query.ChatMessageQueries;
 using Application.Query.ViewModels.Application.Query.ViewModels;
+using Application.Service.Common;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -47,13 +48,13 @@ namespace Service.Rest.V1.Controllers
         [HttpGet("GetChatMessagesBySessionId/{sessionId}")]
         [SwaggerOperation("Get chat messages by session ID")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
-        [SwaggerResponse((int)HttpStatusCode.OK, "Chat messages retrieved successfully", typeof(IEnumerable<GetChatMessagesBySessionIdViewModel>))]
+        [SwaggerResponse((int)HttpStatusCode.OK, "Chat messages retrieved successfully", typeof(PaginatedResult<GetChatMessagesBySessionIdViewModel>))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
-        public async Task<ActionResult<IEnumerable<GetChatMessagesBySessionIdViewModel>>> GetChatMessagesBySessionId(Guid sessionId)
+        public async Task<ActionResult<PaginatedResult<GetChatMessagesBySessionIdViewModel>>> GetChatMessagesBySessionId(Guid sessionId, int pageNumber = 1, int pageSize = 10)
         {
             if (sessionId == Guid.Empty) return BadRequest("Invalid session ID");
 
-            var result = await _mediator.Send(new GetBySessionIdQuery(sessionId));
+            var result = await _mediator.Send(new GetBySessionIdQuery(sessionId, pageNumber, pageSize));
 
             return Ok(result);
         }

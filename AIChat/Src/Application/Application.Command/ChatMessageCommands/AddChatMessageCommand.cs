@@ -22,13 +22,15 @@ public class AddChatMessageCommandHandler : IRequestHandler<AddChatMessageComman
     private readonly IApplicationDbContextUnitOfWork _unitOfWork;
     private readonly IChatSessionRepository _chatSessionRepository;
     private readonly IExternalChatBotService _externalChatService;
+    private readonly ITokenService _tokenService;
 
-    public AddChatMessageCommandHandler(IChatMessageRepository chatMessageRepository, IApplicationDbContextUnitOfWork unitOfWork, IChatSessionRepository chatSessionRepository, IExternalChatBotService externalChatService)
+    public AddChatMessageCommandHandler(IChatMessageRepository chatMessageRepository, IApplicationDbContextUnitOfWork unitOfWork, IChatSessionRepository chatSessionRepository, IExternalChatBotService externalChatService, ITokenService tokenService)
     {
         _chatMessageRepository = chatMessageRepository;
         _unitOfWork = unitOfWork;
         _chatSessionRepository = chatSessionRepository;
         _externalChatService = externalChatService;
+        _tokenService = tokenService;
     }
 
     public async Task<CommandResult> Handle(AddChatMessageCommand request, CancellationToken cancellationToken)
@@ -38,6 +40,19 @@ public class AddChatMessageCommandHandler : IRequestHandler<AddChatMessageComman
         if (chatSession == null)
         {
             return CommandResult.Failure("Chat session not found.");
+        }
+
+        // Check if the ChatSession belongs to the current user
+        var token = await _tokenService.GetTokenFromRequestAsync();
+        if (string.IsNullOrEmpty(token))
+        {
+            throw new UnauthorizedAccessException("Invalid token.");
+        }
+
+        var userId = await _tokenService.GetUserIdFromTokenAsync(token);
+        if (userId == null || chatSession.ApplicationUserId != userId.Value)
+        {
+            return CommandResult.Failure("Unauthorized access to chat session.");
         }
 
         string answer = string.Empty;

@@ -32,12 +32,12 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         }
 
         // Get all chat messages by specific sessionId
-        public async Task<IEnumerable<ChatMessage>> GetChatsWithFeedbackBySessionIdAsync(Guid sessionId)
+        public async Task<IQueryable<ChatMessage>> GetChatsWithFeedbackBySessionIdAsync(Guid sessionId)
         {
-            return await _context.ChatMessages
+            return _context.ChatMessages
                 .Where(message => message.ChatSessionId == sessionId)
                 .Include(message => message.Feedback)
-                .ToListAsync();
+                .AsQueryable();
         }
 
         public async Task AddAsync(ChatMessage chatMessage)
