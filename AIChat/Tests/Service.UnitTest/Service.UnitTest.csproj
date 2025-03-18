@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Src\Application\Application.Service\Application.Service.csproj" />
     <ProjectReference Include="..\..\Src\Service\Service.Rest\Service.Rest.csproj" />
   </ItemGroup>
 

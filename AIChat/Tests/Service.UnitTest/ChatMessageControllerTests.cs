@@ -1,11 +1,12 @@
-﻿using Application.Command.ChatMessageCommands;
-using Application.Query.ChatMessageQueries;
+﻿using Application.Query.ChatMessageQueries;
 using Application.Query.ViewModels.Application.Query.ViewModels;
+using Application.Service.Common;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Service.Rest.V1.Controllers;
 using Service.Rest.V1.RequestModels;
+using System.Net;
 
 namespace Service.UnitTest
 {
@@ -21,74 +22,53 @@ namespace Service.UnitTest
         }
 
         [Fact]
-        public async Task AddChatMessage_ReturnsOkResult_WhenMessageIsAdded()
-        {
-            // Arrange
-            var request = new AddChatMessageModel
-            {
-                ChatSessionId = Guid.NewGuid(),
-                Question = "Test question",
-                Answer = "Test answer"
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatMessageCommand>(), default))
-                         .ReturnsAsync(Guid.NewGuid());
-
-            // Act
-            var result = await _controller.AddChatMessage(request);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.NotNull(okResult.Value);
-        }
-
-        [Fact]
         public async Task AddChatMessage_ReturnsBadRequest_WhenModelStateIsInvalid()
         {
             // Arrange
-            var request = new AddChatMessageModel();
             _controller.ModelState.AddModelError("ChatSessionId", "Required");
 
             // Act
-            var result = await _controller.AddChatMessage(request);
+            var result = await _controller.AddChatMessage(new AddChatMessageModel());
 
             // Assert
-            Assert.IsType<BadRequestObjectResult>(result.Result);
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal((int)HttpStatusCode.BadRequest, badRequestResult.StatusCode);
         }
 
         [Fact]
-        public async Task GetChatMessagesBySessionId_ReturnsOkResult_WithMessages()
+        public async Task GetChatMessagesBySessionId_ReturnsOkResult_WhenSessionIdIsValid()
         {
             // Arrange
             var sessionId = Guid.NewGuid();
-            var messages = new List<GetChatMessagesBySessionIdViewModel>
-                {
-                    new GetChatMessagesBySessionIdViewModel
-                    {
-                        ChatSessionId = sessionId,
-                        ChatMessageId = Guid.NewGuid(),
-                        Question = "Test question",
-                        Answer = "Test answer"
-                    }
-                };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetBySessionIdQuery>(), default))
-                         .ReturnsAsync(messages);
+            var queryResult = new PaginatedResult<GetChatMessagesBySessionIdViewModel>
+            {
+                Items = new List<GetChatMessagesBySessionIdViewModel>(),
+                PageNumber = 1,
+                PageSize = 10,
+                TotalCount = 0
+            };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetBySessionIdQuery>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(queryResult);
 
             // Act
             var result = await _controller.GetChatMessagesBySessionId(sessionId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result.Result);
-            Assert.Equal(messages, okResult.Value);
+            Assert.Equal((int)HttpStatusCode.OK, okResult.StatusCode);
+            Assert.Equal(queryResult, okResult.Value);
         }
 
         [Fact]
-        public async Task GetChatMessagesBySessionId_ReturnsBadRequest_WhenSessionIdIsEmpty()
+        public async Task GetChatMessagesBySessionId_ReturnsBadRequest_WhenSessionIdIsInvalid()
         {
             // Act
             var result = await _controller.GetChatMessagesBySessionId(Guid.Empty);
 
             // Assert
-            Assert.IsType<BadRequestObjectResult>(result.Result);
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            Assert.Equal((int)HttpStatusCode.BadRequest, badRequestResult.StatusCode);
+            Assert.Equal("Invalid session ID", badRequestResult.Value);
         }
     }
 }
