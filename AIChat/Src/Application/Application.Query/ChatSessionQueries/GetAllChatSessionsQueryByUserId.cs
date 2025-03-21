@@ -40,7 +40,8 @@ namespace Application.Query.ChatSessionQueries
             {
                 Id = cs.Id,
                 SessionName = cs.SessionName,
-                Description = cs.Description
+                Description = cs.Description,
+                CreatedAt = cs.CreatedAt
             });
         }
     }

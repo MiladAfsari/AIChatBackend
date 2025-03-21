@@ -6,7 +6,7 @@ using MediatR;
 
 namespace Application.Command.FeedbackCommands
 {
-    public class AddFeedbackCommand : IRequest<bool>
+    public class AddFeedbackCommand : IRequest<CommandResult>
     {
         public Guid ChatMessageId { get; private set; }
         public short Rating { get; private set; }
@@ -18,7 +18,7 @@ namespace Application.Command.FeedbackCommands
         }
     }
 
-    public class AddFeedbackCommandHandler : IRequestHandler<AddFeedbackCommand, bool>
+    public class AddFeedbackCommandHandler : IRequestHandler<AddFeedbackCommand, CommandResult>
     {
         private readonly IFeedbackRepository _feedbackRepository;
         private readonly IChatMessageRepository _chatMessageRepository;
@@ -33,31 +33,31 @@ namespace Application.Command.FeedbackCommands
             _chatMessageRepository = chatMessageRepository;
         }
 
-        public async Task<bool> Handle(AddFeedbackCommand request, CancellationToken cancellationToken)
+        public async Task<CommandResult> Handle(AddFeedbackCommand request, CancellationToken cancellationToken)
         {
             var token = await _tokenService.GetTokenFromRequestAsync();
             if (string.IsNullOrEmpty(token))
             {
-                return false;
+                return CommandResult.Failure("Invalid token.");
             }
 
             var userId = await _tokenService.GetUserIdFromTokenAsync(token);
             if (userId == null)
             {
-                return false;
+                return CommandResult.Failure("User not found.");
             }
 
             var chatMessage = await _chatMessageRepository.GetByIdAsync(request.ChatMessageId);
             if (chatMessage == null)
             {
-                return false;
+                return CommandResult.Failure("Chat message not found.");
             }
 
             // Check for duplicate feedback
             var existingFeedback = await _feedbackRepository.GetByMessageIdAsync(request.ChatMessageId);
             if (existingFeedback.Any(f => f.ApplicationUserId == userId.Value))
             {
-                return false;
+                return CommandResult.Failure("Feedback already exists.");
             }
 
             var feedback = new Feedback
@@ -71,7 +71,7 @@ namespace Application.Command.FeedbackCommands
             await _feedbackRepository.AddAsync(feedback);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return true;
+            return CommandResult.Success(feedback.Id.ToString());
         }
     }
 }

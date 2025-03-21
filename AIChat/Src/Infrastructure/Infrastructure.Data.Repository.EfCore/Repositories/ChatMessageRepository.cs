@@ -37,6 +37,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
             return _context.ChatMessages
                 .Where(message => message.ChatSessionId == sessionId)
                 .Include(message => message.Feedback)
+                .OrderBy(DateTime => DateTime.CreatedAt)
                 .AsQueryable();
         }
 

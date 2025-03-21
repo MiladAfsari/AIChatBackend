@@ -51,5 +51,28 @@ namespace Service.Rest.V1.Controllers
 
             return Ok(result);
         }
+        [HttpDelete("DeleteChatSessionWithMessages/{chatSessionId}")]
+        [SwaggerOperation("Delete a chat session along with its messages")]
+        [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
+        [SwaggerResponse((int)HttpStatusCode.OK, "Chat session and its messages deleted successfully")]
+        [SwaggerResponse((int)HttpStatusCode.NotFound, "Chat session not found")]
+        [SwaggerResponse((int)HttpStatusCode.Unauthorized, "Unauthorized access to chat session")]
+        [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
+        public async Task<ActionResult> DeleteChatSessionWithMessages(Guid chatSessionId)
+        {
+            var result = await _mediator.Send(new DeleteChatSessionWithMessagesCommand(chatSessionId));
+
+            if (!result.IsSuccess)
+            {
+                if (result.Message == "Chat session not found.")
+                    return NotFound(result.Message);
+                if (result.Message == "Unauthorized access to chat session.")
+                    return Unauthorized(result.Message);
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Message);
+        }
+
     }
 }

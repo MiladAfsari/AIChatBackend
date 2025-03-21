@@ -27,15 +27,15 @@ namespace Service.Rest.V1.Controllers
         [HttpPost("AddFeedback")]
         [SwaggerOperation("Add feedback for a chat message")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
-        [SwaggerResponse((int)HttpStatusCode.OK, "Feedback added successfully", typeof(bool))]
+        [SwaggerResponse((int)HttpStatusCode.OK, "Feedback added successfully", typeof(string))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
-        public async Task<ActionResult<bool>> AddFeedback([FromBody] AddFeedbackModel request)
+        public async Task<ActionResult<string>> AddFeedback([FromBody] AddFeedbackModel request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             var result = await _mediator.Send(new AddFeedbackCommand(request.ChatMessageId, request.Rating));
 
-            return result ? Ok(result) : StatusCode(500, "Error adding feedback");
+            return result.IsSuccess ? Ok(result.Data) : StatusCode(500, result.Message);
         }
     }
 }

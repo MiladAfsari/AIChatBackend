@@ -11,6 +11,6 @@
 
         Task<Guid> AddAsync(ChatSession chatSession);
         Task UpdateAsync(ChatSession chatSession);
-        Task DeleteAsync(Guid id);
+        Task DeleteChatSessionWithMessagesAsync(Guid sessionId);
     }
 }

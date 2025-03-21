@@ -78,6 +78,7 @@ namespace Application.Query.ChatMessageQueries
                     ChatMessageId = cm.Id,
                     Question = cm.Question,
                     Answer = cm.Answer,
+                    CreatedAt = cm.CreatedAt,
                     Feedback = cm.Feedback != null ? new FeedbackViewModel
                     {
                         Rating = cm.Feedback.Rating

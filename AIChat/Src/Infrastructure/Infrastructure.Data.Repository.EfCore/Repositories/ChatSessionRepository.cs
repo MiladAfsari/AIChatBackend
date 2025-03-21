@@ -16,18 +16,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         public async Task<Guid> AddAsync(ChatSession chatSession)
         {
             _context.ChatSessions.Add(chatSession);
-            await _context.SaveChangesAsync();
             return chatSession.Id;
-        }
-
-        public async Task DeleteAsync(Guid id)
-        {
-            var chatSession = await _context.ChatSessions.FindAsync(id);
-            if (chatSession != null)
-            {
-                _context.ChatSessions.Remove(chatSession);
-                await _context.SaveChangesAsync();
-            }
         }
 
         public async Task<IEnumerable<ChatSession>> GetAllAsync()
@@ -44,6 +33,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         {
             return await _context.ChatSessions
                 .Where(cs => cs.ApplicationUserId == userId)
+                .OrderBy(cs => cs.CreatedAt)
                 .ToListAsync();
         }
 
@@ -57,7 +47,19 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
         public async Task UpdateAsync(ChatSession chatSession)
         {
             _context.ChatSessions.Update(chatSession);
-            await _context.SaveChangesAsync();
+        }
+        public async Task DeleteChatSessionWithMessagesAsync(Guid sessionId)
+        {
+            var chatSession = await _context.ChatSessions
+                .Where(cs => cs.Id == sessionId)
+                .Select(cs => new { ChatSession = cs, ChatMessages = cs.ChatMessages })
+                .FirstOrDefaultAsync();
+
+            if (chatSession != null)
+            {
+                _context.ChatMessages.RemoveRange(chatSession.ChatMessages);
+                _context.ChatSessions.Remove(chatSession.ChatSession);
+            }
         }
     }
 }
