@@ -30,6 +30,9 @@ namespace Service.Rest
                 builder.Services.RegisterJWTAuthentication(builder.Configuration);
                 builder.Services.RegisterHangfireService(builder.Configuration);
 
+                // Register all validators
+                builder.Services.RegisterValidators();
+
                 // Register ILogger
                 builder.Services.AddLogging();
 

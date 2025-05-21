@@ -11,6 +11,7 @@ using Domain.Core.Entities.UserTokenTemplateAggregate;
 using Domain.Core.Error;
 using Domain.Core.Exception;
 using Domain.Core.UnitOfWorkContracts;
+using FluentValidation;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Infrastructure.Data.Repository.EfCore.DatabaseContexts;
@@ -231,7 +232,37 @@ namespace Service.Rest
                 .WriteTo.Sink(new ExceptionLogSink(exceptionLogRepository, applicationDbContextUnitOfWork))
                 .CreateLogger();
         }
+        public static IServiceCollection RegisterValidators(this IServiceCollection services)
+        {
+            var entryAssembly = Assembly.GetEntryAssembly();
+            var referencedAssemblies = entryAssembly.GetReferencedAssemblies()
+                .Select(Assembly.Load)
+                .ToList();
 
+            var assemblies = new List<Assembly>(referencedAssemblies) { entryAssembly };
+
+            var validatorTypes = assemblies
+                .SelectMany(a => a.GetTypes())
+                .Where(t =>
+                    t.IsClass &&
+                    !t.IsAbstract &&
+                    !t.IsGenericType && // Exclude generic type definitions
+                    t.GetInterfaces()
+                        .Any(i => i.IsGenericType &&
+                                  i.GetGenericTypeDefinition() == typeof(IValidator<>))
+                );
+
+            foreach (var validatorType in validatorTypes)
+            {
+                var validatorInterface = validatorType.GetInterfaces()
+                    .First(i => i.IsGenericType &&
+                                i.GetGenericTypeDefinition() == typeof(IValidator<>));
+
+                services.AddTransient(validatorInterface, validatorType);
+            }
+
+            return services;
+        }
         public class ExceptionLogSink : ILogEventSink
         {
             private readonly IExceptionLogRepository _exceptionLogRepository;
