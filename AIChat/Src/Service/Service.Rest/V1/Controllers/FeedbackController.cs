@@ -35,7 +35,18 @@ namespace Service.Rest.V1.Controllers
 
             var result = await _mediator.Send(new AddFeedbackCommand(request.ChatMessageId, request.Rating));
 
-            return result.IsSuccess ? Ok(result.Data) : StatusCode(500, result.Message);
+            if (result.IsSuccess)
+            {
+                return Ok(result.Data);
+            }
+            else if (result.Message == "Invalid token." || result.Message == "User not found." || result.Message == "Chat message not found.")
+            {
+                return BadRequest(result.Message);
+            }
+            else
+            {
+                return StatusCode(500, result.Message);
+            }
         }
     }
 }

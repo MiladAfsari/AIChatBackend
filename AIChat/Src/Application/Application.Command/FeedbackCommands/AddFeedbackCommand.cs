@@ -25,7 +25,11 @@ namespace Application.Command.FeedbackCommands
         private readonly IApplicationDbContextUnitOfWork _unitOfWork;
         private readonly ITokenService _tokenService;
 
-        public AddFeedbackCommandHandler(IFeedbackRepository feedbackRepository, IApplicationDbContextUnitOfWork unitOfWork, ITokenService tokenService, IChatMessageRepository chatMessageRepository)
+        public AddFeedbackCommandHandler(
+            IFeedbackRepository feedbackRepository,
+            IApplicationDbContextUnitOfWork unitOfWork,
+            ITokenService tokenService,
+            IChatMessageRepository chatMessageRepository)
         {
             _feedbackRepository = feedbackRepository;
             _unitOfWork = unitOfWork;
@@ -53,25 +57,33 @@ namespace Application.Command.FeedbackCommands
                 return CommandResult.Failure("Chat message not found.");
             }
 
-            // Check for duplicate feedback
-            var existingFeedback = await _feedbackRepository.GetByMessageIdAsync(request.ChatMessageId);
-            if (existingFeedback.Any(f => f.ApplicationUserId == userId.Value))
+            var existingFeedbacks = await _feedbackRepository.GetByMessageIdAsync(request.ChatMessageId);
+            var feedback = existingFeedbacks.FirstOrDefault(f => f.ApplicationUserId == userId.Value);
+
+            string status;
+            if (feedback != null)
             {
-                return CommandResult.Failure("Feedback already exists.");
+                feedback.Rating = request.Rating;
+                await _feedbackRepository.UpdateAsync(feedback);
+                status = "update";
+            }
+            else
+            {
+                feedback = new Feedback
+                {
+                    Id = Guid.NewGuid(),
+                    ChatMessageId = request.ChatMessageId,
+                    ApplicationUserId = userId.Value,
+                    Rating = request.Rating
+                };
+                await _feedbackRepository.AddAsync(feedback);
+                status = "insert";
             }
 
-            var feedback = new Feedback
-            {
-                Id = Guid.NewGuid(),
-                ChatMessageId = request.ChatMessageId,
-                ApplicationUserId = userId.Value,
-                Rating = request.Rating
-            };
-
-            await _feedbackRepository.AddAsync(feedback);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return CommandResult.Success(feedback.Id.ToString());
+            var resultJson = $"{{\"status\":\"{status}\",\"feedbackId\":\"{feedback.Id}\"}}";
+            return CommandResult.Success(resultJson);
         }
     }
 }
