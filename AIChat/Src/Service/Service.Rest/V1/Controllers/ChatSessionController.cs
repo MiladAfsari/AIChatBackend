@@ -74,5 +74,30 @@ namespace Service.Rest.V1.Controllers
             return Ok(result.Message);
         }
 
+        [HttpPatch("UpdateChatSessionName")]
+        [SwaggerOperation("Update the name of a chat session")]
+        [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
+        [SwaggerResponse((int)HttpStatusCode.OK, "Chat session name updated successfully")]
+        [SwaggerResponse((int)HttpStatusCode.NotFound, "Chat session not found")]
+        [SwaggerResponse((int)HttpStatusCode.Unauthorized, "Unauthorized access to chat session")]
+        [SwaggerResponse((int)HttpStatusCode.InternalServerError, "Internal server error")]
+        public async Task<ActionResult> UpdateChatSessionName([FromBody] UpdateChatSessionNameModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (model == null || string.IsNullOrWhiteSpace(model.NewSessionName))
+                return BadRequest("New session name must not be empty.");
+
+            var result = await _mediator.Send(new UpdateChatSessionNameBySessionIdCommand(model.chatSessionId, model.NewSessionName));
+            if (!result.IsSuccess)
+            {
+                if (result.Message == "Chat session not found.")
+                    return NotFound(result.Message);
+                if (result.Message == "Unauthorized access to chat session.")
+                    return Unauthorized(result.Message);
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Data);
+        }
     }
 }
