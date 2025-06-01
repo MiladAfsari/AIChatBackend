@@ -25,7 +25,7 @@ namespace Service.Rest.V1.Controllers
             _mediator = mediator;
         }
 
-        [LogRequestResponse]
+        //[LogRequestResponse]
         [HttpPost("AddChatMessage")]
         [SwaggerOperation("Add a new chat message")]
         [SwaggerResponse((int)HttpStatusCode.BadRequest, "Invalid request")]
