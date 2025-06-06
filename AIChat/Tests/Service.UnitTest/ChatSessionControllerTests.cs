@@ -25,7 +25,7 @@ namespace Service.UnitTest
         {
             // Arrange
             var request = new AddChatSessionModel { SessionName = "Test Session", Description = "Test Description" };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatSessionCommand>(), default)).ReturnsAsync(Guid.NewGuid());
+            _mediatorMock.Setup(m => m.Send(It.IsAny<AddChatSessionCommand>(), default)).ReturnsAsync(Guid.CreateVersion7());
 
             // Act
             var result = await _controller.AddChatSession(request);
@@ -55,8 +55,8 @@ namespace Service.UnitTest
             // Arrange
             var chatSessions = new List<GetChatSessionsByUserIdViewModel>
                 {
-                    new GetChatSessionsByUserIdViewModel { Id = Guid.NewGuid(), SessionName = "Session 1", Description = "Description 1" },
-                    new GetChatSessionsByUserIdViewModel { Id = Guid.NewGuid(), SessionName = "Session 2", Description = "Description 2" }
+                    new GetChatSessionsByUserIdViewModel { Id = Guid.CreateVersion7(), SessionName = "Session 1", Description = "Description 1" },
+                    new GetChatSessionsByUserIdViewModel { Id = Guid.CreateVersion7(), SessionName = "Session 2", Description = "Description 2" }
                 };
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetAllChatSessionsQueryByUserId>(), default)).ReturnsAsync(chatSessions);
 

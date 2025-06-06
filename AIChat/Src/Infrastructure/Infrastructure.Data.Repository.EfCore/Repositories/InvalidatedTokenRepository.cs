@@ -18,7 +18,7 @@ namespace Infrastructure.Data.Repository.EfCore.Repositories
             {
                 var invalidatedToken = new InvalidatedToken
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.CreateVersion7(),
                     ApplicationUserId = userId,
                     Token = token,
                     InvalidatedAt = DateTime.UtcNow

@@ -39,7 +39,7 @@ namespace Service.UnitTest
         public async Task GetChatMessagesBySessionId_ReturnsOkResult_WhenSessionIdIsValid()
         {
             // Arrange
-            var sessionId = Guid.NewGuid();
+            var sessionId = Guid.CreateVersion7();
             var queryResult = new PaginatedResult<GetChatMessagesBySessionIdViewModel>
             {
                 Items = new List<GetChatMessagesBySessionIdViewModel>(),

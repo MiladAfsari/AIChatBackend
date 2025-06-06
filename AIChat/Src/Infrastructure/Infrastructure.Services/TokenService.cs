@@ -40,7 +40,7 @@ namespace Infrastructure.Services
             var claims = new[]
             {
                     new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString())
                 };
 
             var creds = new SigningCredentials(_signingKey, SecurityAlgorithms.HmacSha256);
@@ -61,7 +61,7 @@ namespace Infrastructure.Services
             // Store the token in the database
             var userToken = new UserToken
             {
-                Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 ApplicationUserId = user.Id,
                 Token = tokenString,
                 IssuedAt = DateTime.UtcNow,

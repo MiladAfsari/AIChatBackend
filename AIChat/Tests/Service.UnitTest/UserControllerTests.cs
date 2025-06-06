@@ -91,7 +91,7 @@ namespace Service.UnitTest
         public async Task GetUserByToken_ShouldReturnOkResult_WhenUserIsFound()
         {
             // Arrange
-            var userViewModel = new UserViewModel { Id = Guid.NewGuid(), UserName = "testuser", FullName = "Test User", Email = "testuser@example.com", DepartmentId = 1 };
+            var userViewModel = new UserViewModel { Id = Guid.CreateVersion7(), UserName = "testuser", FullName = "Test User", Email = "testuser@example.com", DepartmentId = 1 };
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetUserByTokenQuery>(), default)).ReturnsAsync(userViewModel);
 
             // Act

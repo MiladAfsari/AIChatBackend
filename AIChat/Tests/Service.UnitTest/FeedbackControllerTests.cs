@@ -23,7 +23,7 @@ namespace Service.UnitTest
         //public async Task AddFeedback_ReturnsOkResult_WhenFeedbackIsAddedSuccessfully()
         //{
         //    // Arrange
-        //    var request = new AddFeedbackModel { ChatMessageId = Guid.NewGuid(), Rating = 5 };
+        //    var request = new AddFeedbackModel { ChatMessageId = Guid.CreateVersion7(), Rating = 5 };
         //    var commandResult = new CommandResult<string> { IsSuccess = true, Data = "Feedback added successfully" };
         //    _mediatorMock.Setup(m => m.Send(It.IsAny<AddFeedbackCommand>(), default)).ReturnsAsync(commandResult);
 
@@ -54,7 +54,7 @@ namespace Service.UnitTest
         //public async Task AddFeedback_ReturnsInternalServerError_WhenFeedbackAdditionFails()
         //{
         //    // Arrange
-        //    var request = new AddFeedbackModel { ChatMessageId = Guid.NewGuid(), Rating = 5 };
+        //    var request = new AddFeedbackModel { ChatMessageId = Guid.CreateVersion7(), Rating = 5 };
         //    var commandResult = new CommandResult<string> { IsSuccess = false, Message = "Internal server error" };
         //    _mediatorMock.Setup(m => m.Send(It.IsAny<AddFeedbackCommand>(), default)).ReturnsAsync(commandResult);
 

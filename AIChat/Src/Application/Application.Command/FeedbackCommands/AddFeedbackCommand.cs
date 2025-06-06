@@ -3,6 +3,7 @@ using Domain.Core.Entities.ChatMessageTemplateAggregate;
 using Domain.Core.Entities.FeedbackTemplateAggregate;
 using Domain.Core.UnitOfWorkContracts;
 using MediatR;
+using System;
 
 namespace Application.Command.FeedbackCommands
 {
@@ -71,7 +72,7 @@ namespace Application.Command.FeedbackCommands
             {
                 feedback = new Feedback
                 {
-                    Id = Guid.NewGuid(),
+                    Id = Guid.CreateVersion7(),
                     ChatMessageId = request.ChatMessageId,
                     ApplicationUserId = userId.Value,
                     Rating = request.Rating
