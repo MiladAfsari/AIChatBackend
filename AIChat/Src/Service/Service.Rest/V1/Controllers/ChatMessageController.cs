@@ -35,10 +35,25 @@ namespace Service.Rest.V1.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var result = await _mediator.Send(new AddChatMessageCommand(request.ChatSessionId, request.Question));
+            // Pass all required parameters to AddChatMessageCommand
+            var result = await _mediator.Send(
+                new AddChatMessageCommand(
+                    request.ChatSessionId == Guid.Empty ? null : request.ChatSessionId,
+                    request.Question,
+                    request.SessionName,
+                    request.Description
+                )
+            );
 
             if (!result.IsSuccess)
             {
+                // Return 400 for known failures, 500 for unexpected errors
+                if (result.Message?.Contains("Unauthorized", StringComparison.OrdinalIgnoreCase) == true ||
+                    result.Message?.Contains("not found", StringComparison.OrdinalIgnoreCase) == true ||
+                    result.Message?.Contains("Invalid", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    return BadRequest(result.Message);
+                }
                 return StatusCode(500, result.Message);
             }
 

@@ -6,13 +6,17 @@ using MediatR;
 
 public class AddChatMessageCommand : IRequest<CommandResult>
 {
-    public Guid ChatSessionId { get; private set; }
+    public Guid? ChatSessionId { get; private set; }
     public string Question { get; private set; }
+    public string SessionName { get; private set; }
+    public string? Description { get; private set; }
 
-    public AddChatMessageCommand(Guid chatSessionId, string question)
+    public AddChatMessageCommand(Guid? chatSessionId, string question, string sessionName, string? description = null)
     {
         ChatSessionId = chatSessionId;
         Question = question;
+        SessionName = sessionName;
+        Description = description;
     }
 }
 
@@ -24,7 +28,12 @@ public class AddChatMessageCommandHandler : IRequestHandler<AddChatMessageComman
     private readonly IExternalChatBotService _externalChatService;
     private readonly ITokenService _tokenService;
 
-    public AddChatMessageCommandHandler(IChatMessageRepository chatMessageRepository, IApplicationDbContextUnitOfWork unitOfWork, IChatSessionRepository chatSessionRepository, IExternalChatBotService externalChatService, ITokenService tokenService)
+    public AddChatMessageCommandHandler(
+        IChatMessageRepository chatMessageRepository,
+        IApplicationDbContextUnitOfWork unitOfWork,
+        IChatSessionRepository chatSessionRepository,
+        IExternalChatBotService externalChatService,
+        ITokenService tokenService)
     {
         _chatMessageRepository = chatMessageRepository;
         _unitOfWork = unitOfWork;
@@ -35,26 +44,28 @@ public class AddChatMessageCommandHandler : IRequestHandler<AddChatMessageComman
 
     public async Task<CommandResult> Handle(AddChatMessageCommand request, CancellationToken cancellationToken)
     {
-        // Check if the ChatSession exists
-        var chatSession = await _chatSessionRepository.GetByIdAsync(request.ChatSessionId);
-        if (chatSession == null)
+        Guid sessionId;
+        ChatSession chatSession = null;
+
+        // Validate question
+        if (string.IsNullOrWhiteSpace(request.Question))
         {
-            return CommandResult.Failure("Chat session not found.");
+            return CommandResult.Failure("Question must not be null or empty.");
         }
 
-        // Check if the ChatSession belongs to the current user
+        // Get token and userId
         var token = await _tokenService.GetTokenFromRequestAsync();
         if (string.IsNullOrEmpty(token))
         {
             throw new UnauthorizedAccessException("Invalid token.");
         }
-
         var userId = await _tokenService.GetUserIdFromTokenAsync(token);
-        if (userId == null || chatSession.ApplicationUserId != userId.Value)
+        if (userId == null)
         {
             return CommandResult.Failure("Unauthorized access to chat session.");
         }
 
+        // 1. Get chat bot response first
         string answer = string.Empty;
         try
         {
@@ -70,14 +81,46 @@ public class AddChatMessageCommandHandler : IRequestHandler<AddChatMessageComman
             return CommandResult.Failure($"An error occurred while getting response from chat bot: {ex.Message}");
         }
 
-        if (string.IsNullOrEmpty(answer) || string.IsNullOrWhiteSpace(answer))
+        if (string.IsNullOrWhiteSpace(answer))
         {
+            // Do not create session or message if no answer
             return CommandResult.Failure("Failed to get response from chat bot.");
         }
 
+        // 2. If sessionId provided, check existence and ownership
+        if (request.ChatSessionId.HasValue && request.ChatSessionId.Value != Guid.Empty)
+        {
+            chatSession = await _chatSessionRepository.GetByIdAsync(request.ChatSessionId.Value);
+            if (chatSession == null)
+            {
+                return CommandResult.Failure("Chat session not found.");
+            }
+            if (chatSession.ApplicationUserId != userId.Value)
+            {
+                return CommandResult.Failure("Unauthorized access to chat session.");
+            }
+            sessionId = chatSession.Id;
+        }
+        else
+        {
+            // 3. If not provided, create new session
+            var newSession = new ChatSession
+            {
+                Id = Guid.CreateVersion7(),
+                SessionName = request.SessionName ?? "New Session",
+                Description = request.Description,
+                ApplicationUserId = userId.Value,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _chatSessionRepository.AddAsync(newSession);
+            sessionId = newSession.Id;
+            chatSession = newSession;
+        }
+
+        // 4. Add chat message
         var chatMessage = new ChatMessage
         {
-            ChatSessionId = request.ChatSessionId,
+            ChatSessionId = sessionId,
             Question = request.Question,
             Answer = answer
         };
@@ -85,7 +128,7 @@ public class AddChatMessageCommandHandler : IRequestHandler<AddChatMessageComman
         await _chatMessageRepository.AddAsync(chatMessage);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var resultData = new { Answer = answer, ChatMessageId = chatMessage.Id };
+        var resultData = new { Answer = answer, ChatMessageId = chatMessage.Id, ChatSessionId = sessionId };
         return CommandResult.Success(System.Text.Json.JsonSerializer.Serialize(resultData));
     }
 }
